@@ -1,0 +1,45 @@
+<!-- Flex box to fill the remaining vertical space -->
+<div class="flex flex-row h-full">
+
+   <div *ngIf="(isReadOnly() | async) === true"
+      class="absolute flex items-center justify-center w-40 h-8 right-0 dark:bg-gray-800 transform rotate-45 translate-y-6 translate-x-12">
+      Read only
+   </div>
+
+   <div class="relative" *ngIf="isWeb()">
+      <div *ngIf="(getOrigin() | async) as o"
+         class="absolute z-[500] text-xl left-4 top-4 flex flex-col fill-gray-700 dark:fill-white whitespace-nowrap">
+         {{ o.owner }} / {{ o.repo }} / {{ o.ref }} / {{ o.path }}
+      </div>
+   </div>
+
+   <!-- Node Toolbar-->
+   <div class="relative" *ngIf="(isReadOnly() | async) === false">
+      <div
+         class="absolute z-[500] left-4 top-4 flex flex-col text-gray-700 dark:text-white fill-gray-700 dark:fill-white">
+
+         <div *ngFor="let nodeButtons of nodeButtonSeries" class="flex flex-row w-20 group pointer-events-none">
+
+            <div *ngFor="let nodeButton of nodeButtons; let i = index" class="w-12 h-12 pointer-events-auto"
+               [ngClass]="i > 0 ? 'opacity-0 duration-300 -translate-x-96 transform transition-transform group-hover:opacity-100 group-hover:translate-x-0' :''">
+               <button
+                  class="secondary flex items-center justify-center w-10 h-10 m-1 rounded-sm shadow-md cid-button-secondary"
+                  [innerHTML]="nodeButton.icon | safe:'html'" [matTooltip]="nodeButton.tooltip"
+                  matTooltipPosition="below" matTooltipShowDelay="200"
+                  (click)="onCreateNode($event, nodeButton.type)"></button>
+            </div>
+         </div>
+      </div>
+   </div>
+
+   <!-- Graph Canvas -->
+   <div class="cid-rete-background">
+      <div class="cid-rete" #rete> </div>
+   </div>
+
+   <!-- Sidebar -->
+   <ng-container *ngIf="(isReadOnly() | async) === false">
+      <app-sidebar></app-sidebar>
+   </ng-container>
+
+</div>

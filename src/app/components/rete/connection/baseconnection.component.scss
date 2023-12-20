@@ -1,0 +1,40 @@
+@use "sass:math";
+
+svg {
+  overflow: visible;
+  position: absolute;
+  pointer-events: none;
+
+  path {
+    fill: none;
+    pointer-events: auto;
+    stroke-width: 1.5px;
+
+    // data paths are animated
+    &:not(.exec) {
+      animation: dash 1.2s linear infinite;
+      stroke-dasharray: 5, 5;
+      stroke-dashoffset: 0;
+
+      body.dark & {
+        stroke: #ffffff;
+      }
+
+      body:not(.dark) & {
+        stroke: blue;
+      }
+    }
+  }
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 25%;
+  }
+}

@@ -1,0 +1,82 @@
+@import "~@angular/material/prebuilt-themes/deeppurple-amber.css";
+
+@import 'styles/scrollbar.scss';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: 'Mona Sans';
+    font-display: swap;
+    src:
+        url('assets/Mona-Sans.woff2') format('woff2 supports variations'),
+        url('assets/Mona-Sans.woff2') format('woff2-variations');
+    font-weight: 200 900;
+    font-stretch: 75% 125%;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    @apply absolute w-full h-full overflow-x-hidden;
+
+    color: var(--vscode-editor-foreground);
+
+    // This is only used for when VS Code opens up
+    // a new window to avoid a white flash.
+    background: var(--vscode-editor-background);
+
+    // Disable all text selection
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+html,
+body {
+    // Exclusively for vscode to remove padding
+    padding: 0 !important;
+}
+
+*:focus-visible {
+    // Remove the default focus ring
+    outline: none !important;
+}
+
+.cid-secret,
+textarea,
+input[type='text'],
+input[type='number'] {
+    background: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    font-size: var(--vscode-font-size);
+
+    @apply p-1;
+
+    &::placeholder {
+        color: var(--vscode-input-placeholderForeground);
+    }
+
+    border-width: 1px;
+    border-color: transparent;
+
+    &:focus {
+        border-color: var(--vscode-focusBorder);
+    }
+
+}
+
+ng-icon {
+    @apply text-2xl;
+}
+
+app-root {
+    // The graph layout uses the column flex style
+    // to fill the remaining space vertically.
+    flex-direction: column;
+    height: 100%;
+    display: flex;
+}

@@ -1,0 +1,108 @@
+<div *ngIf="!isReadOnly()" [class.opacity-100]="mouseover" class="flex items-center pointer-events-none justify-between gap-x-2 absolute z-[100] px-2 -top-8 h-8 w-full text-gray-700 dark:text-gray-300 
+  opacity-0 transition duration-500">
+  <!-- Fold Button-->
+  <ng-icon [name]="getFoldIcon()" size="18" [matTooltip]="getFoldTooltip()"
+    (pointerdown)="onShowHideConnectedPorts($event)" matTooltipPosition="above"
+    class="pointer-events-auto cursor-pointer text-sm text-gray-300 dark:text-white hover:text-blue-500 hover:dark:text-blue-500"></ng-icon>
+
+  <!-- Delete Node Button-->
+  <ng-icon *ngIf="!data.getDefinition().entry" (pointerdown)="onDeleteNode($event)" name="octTrash" size="18"
+    matTooltip="Delete Node" matTooltipPosition="above"
+    class="pointer-events-auto cursor-pointer text-sm text-gray-300 dark:text-white hover:text-red-500 hover:dark:text-red-500"></ng-icon>
+</div>
+
+<!-- Node Header -->
+<div *ngIf="!isCompact()" class="cid-title h-8 bg-slate-600 w-full flex items-center justify-between gap-x-1 px-2"
+  [class.rounded-sm]="isCompact()" [style.background]="getHeaderBackground() | safe:'style'">
+
+  <ng-container [ngSwitch]="data.getDefinition().registry">
+
+    <div class="flex flex-row items-center justify-between gap-x-2">
+
+      <!-- Github Icons (if github action node) -->
+      <ng-template [ngSwitchCase]="'github.com'">
+        <ng-icon *ngIf="getIcon() as icon" class="text-white" size="16" [name]="icon"></ng-icon>
+      </ng-template>
+
+      <!-- Default Icons-->
+      <ng-template ngSwitchDefault>
+        <iframe *ngIf="data.getDefinition().icon" frameborder="0" scrolling="no" marginwidth="0" marginheight="0"
+          class="rounded-sm py-1 h-8 w-8" [srcdoc]="data.getDefinition().icon | sanitize | safe:'html'"></iframe>
+      </ng-template>
+
+      <span class="cid-label">{{getNodeLabel()}}</span>
+    </div>
+
+    <span *ngIf="isGitHubAction()" class="cid-id">{{getNodeId()}}</span>
+
+  </ng-container>
+</div>
+
+<!-- Node Body -->
+<div class="cid-body w-full flex flex-col bg-gray-200 dark:bg-slate-700 rounded-b-lg"
+  [class.pointer-events-none]="isReadOnly()" [style.background]="getBodyBackground() | safe:'style'"
+  [class.rounded-t-lg]="isCompact()">
+
+  <div [ngClass]="isCompact() ? 'flex flex-row justify-center items-center' : 'flex flex-col'">
+
+    <div [ngClass]="isCompact() ? 'order-1': 'w-full order-2'">
+      <!-- Inputs -->
+      <div *ngFor="let port of data.getInputs() | keyvalue: sortPorts" [class.hidden]="!showInput(port.value)"
+        class="flex flex-row flex-wrap justify-start items-center px-2 py-1 gap-x-2"
+        [class.flex-wrap]="port.value.isArray()">
+
+        <!-- Input socket -->
+        <div *ngIf="showSocket(port.value)" refComponent
+          [data]="{type: 'socket', side: 'input', key: port.key, nodeId: data.id, payload: port.value.socket, seed: seed }"
+          [emit]="emit"></div>
+
+        <!-- Input label -->
+        <span *ngIf="port.value.label as label" class="whitespace-nowrap"
+          [title]="port.value.def.description">{{label}}</span>
+
+        <ng-container *ngIf="showInputGroupButtons(port.value)">
+          <!-- Push buttons to the right -->
+          <div class="flex-grow"></div>
+
+          <button (pointerdown)="onAppendInputValue($event, port.value)" class="opacity-50">
+            Add
+          </button>
+          <button (pointerdown)="onPopInputValue($event, port.value)" class="opacity-50">
+            Remove
+          </button>
+        </ng-container>
+
+        <!-- Input control -->
+        <div refComponent *ngIf="showInputControl(port.value)" class="leading-4 w-full"
+          [data]="{type: 'control', payload: port.value.control }" [emit]="emit">
+        </div>
+
+      </div>
+    </div>
+
+    <div *ngIf="isCompact()" class="text-4xl text-center order-2">
+      {{data.getName()}}
+    </div>
+
+    <div [ngClass]="isCompact() ? 'order-3': 'w-full   order-1'">
+      <!-- Outputs -->
+      <div *ngFor="let port of data.getOutputs() | keyvalue: sortPorts" [class.hidden]="!showOutput(port.key)"
+        class="flex flex-row justify-end items-center ml-6 mr-2 gap-x-2 my-1">
+        <span *ngIf="port.value.label as label" class="whitespace-nowrap">{{label}}</span>
+
+        <ng-container *ngIf="showOutputGroupButtons(port.value)">
+          <button (pointerdown)="onAppendOutputValue($event, port.value)" class="opacity-50">
+            Add
+          </button>
+          <button (pointerdown)="onPopOutputValue($event, port.value)" class="opacity-50">
+            Remove
+          </button>
+        </ng-container>
+
+        <div *ngIf="showSocket(port.value)" class="cid-output-socket" refComponent
+          [data]="{type: 'socket', side: 'output', key: port.key, nodeId: data.id, payload: port.value.socket, seed: seed }"
+          [emit]="emit"></div>
+      </div>
+    </div>
+  </div>
+</div>

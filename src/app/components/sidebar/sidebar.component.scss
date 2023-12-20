@@ -1,0 +1,19 @@
+:host {
+	background-color: var(--vscode-editor-background);
+
+	z-index: 1;
+	box-shadow: -10px 0px 16px rgba(0, 0, 0, 0.2);
+	font-size: 13px;
+}
+
+.cid-registry:hover {
+	background-color: var(--vscode-editor-selectionHighlightBackground);
+}
+
+.cid-name {
+	color: var(--vscode-editor-foreground);
+}
+
+.cid-description {
+	color: var(--vscode-descriptionForeground);
+}

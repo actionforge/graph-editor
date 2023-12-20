@@ -1,0 +1,5 @@
+.cid-input {
+    &:placeholder-shown.cid-required {
+        border: 1px solid var(--vscode-inputValidation-errorBorder);
+    }
+}

@@ -1,0 +1,64 @@
+@use "sass:math";
+
+$socket-size: 16px;
+$socket-margin: 8px;
+$input-text-size: 16px;
+
+:host {
+  @apply font-mono hover:border-gray-700 dark:hover:border-gray-300 text-xs;
+  box-shadow: 0px 0px 16px rgba(0, 0, 0, 0.2);
+
+  display: inline-block;
+  height: auto;
+  box-sizing: content-box;
+  min-width: 160px;
+
+  // Border effect on hover
+  @apply transition duration-300;
+  // use 4px transparent to avoid jumps
+  // when hovering due to padding caused by border
+  border: 2px solid transparent;
+  border-radius: 9px;
+
+  &.selected {
+    border-color: var(--vscode-focusBorder) !important;
+  }
+
+  .cid-title {
+    border-radius: 7px 7px 0 0;
+    overflow: hidden;
+
+    .cid-label {
+      @apply text-white;
+    }
+
+    .cid-id {
+      @apply text-blue-400 ml-4;
+    }
+  }
+
+  .cid-body {
+    .cid-output {
+      display: flex;
+      align-items: center;
+      padding-right: 8px;
+      text-align: right;
+      justify-content: flex-end;
+      height: 2em;
+    }
+
+    .cid-output-socket {
+      text-align: right;
+    }
+
+    .cid-input-title,
+    .cid-output-title {
+      @apply text-xs;
+      color: white;
+      display: inline-block;
+      font-family: sans-serif;
+      margin: $socket-margin;
+      line-height: $socket-size;
+    }
+  }
+}

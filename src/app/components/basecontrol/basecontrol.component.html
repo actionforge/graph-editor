@@ -1,0 +1,81 @@
+<ng-container [ngSwitch]="data.type">
+
+  <!-- Boolean input -->
+  <ng-container *ngSwitchCase="BaseControlType.bool" [ngTemplateOutlet]="bool"
+    [ngTemplateOutletContext]="{ value: data.getValue() || data.default || false }"></ng-container>
+
+  <!-- Number input -->
+  <ng-container *ngSwitchCase="BaseControlType.number" [ngTemplateOutlet]="number"
+    [ngTemplateOutletContext]="{ value: data.getValue() || data.default || 0 }"></ng-container>
+
+  <!-- String input -->
+  <ng-container *ngSwitchCase="BaseControlType.string" [ngTemplateOutlet]="string"
+    [ngTemplateOutletContext]="{ value: data.getValue() || data.default || '' }"></ng-container>
+
+  <!-- Option input -->
+  <ng-container *ngSwitchCase="BaseControlType.option" [ngTemplateOutlet]="option"
+    [ngTemplateOutletContext]="{ value: data.getValue() || data.default || '' }"></ng-container>
+
+  <!-- Array input -->
+  <ng-container *ngSwitchCase="BaseControlType.array_bool" [ngTemplateOutlet]="arrayBoolean"
+    [ngTemplateOutletContext]="{ value: data.getValue() || [] }"></ng-container>
+  <ng-container *ngSwitchCase="BaseControlType.array_number" [ngTemplateOutlet]="arrayNumber"
+    [ngTemplateOutletContext]="{ value: data.getValue() || [] }"></ng-container>
+  <ng-container *ngSwitchCase="BaseControlType.array_string" [ngTemplateOutlet]="arrayString"
+    [ngTemplateOutletContext]="{ value: data.getValue() || [] }">
+  </ng-container>
+
+</ng-container>
+
+
+<ng-template #option let-options="options">
+  <vscode-dropdown [value]="data.getValue() || data.default || undefined">
+    <vscode-option *ngFor="let option of data.options" (mousedown)="onChange($event)"
+      [value]="option.value">{{option.name}}</vscode-option>
+  </vscode-dropdown>
+</ng-template>
+
+
+<!-- Single line text field -->
+<ng-template #string let-value="value" let-index="index">
+
+  <ng-container *ngIf="!data.multiline; else stringMulti">
+    <input type="text" class="w-full cid-input" (keydown.escape)="onChange($event, index)"
+      (keydown.enter)="onChange($event, index)" [class.cid-required]="isEmpty()" (blur)="onChange($event, index)"
+      autocomplete="off" [placeholder]="data.hint || ''" [value]="value" [readonly]="isReadOnly()" />
+  </ng-container>
+
+  <ng-template #stringMulti>
+    <vscode-text-area #input class="w-full cid-input" (blur)="onChange($event)" [class.cid-required]="isEmpty()"
+      [readonly]="isReadOnly()" [value]="value"></vscode-text-area>
+  </ng-template>
+
+</ng-template>
+
+<ng-template #bool let-value="value">
+  <vscode-checkbox (change)="onChange($event)" [checked]="value" class="w-6 h-6">
+  </vscode-checkbox>
+</ng-template>
+
+<ng-template #number let-value="value">
+  <input #input type="number" (keydown.escape)="onChange($event)" (keydown.enter)="onChange($event)"
+    (blur)="onChange($event)" [value]="value" [readonly]="isReadOnly()" [title]="value" [step]="data.step "
+    placeholder=" " />
+</ng-template>
+
+<ng-template #arrayBoolean let-value="value">
+  Array Boolean
+</ng-template>
+
+<ng-template #arrayNumber let-value="value">
+  Array Number
+</ng-template>
+
+<ng-template #arrayString let-value="value">
+  <div class="flex flex-col gap-y-2 pl-8 w-full">
+    <div *ngFor="let v of value; index as i" class="w-full">
+      <ng-container [ngTemplateOutlet]="string" [ngTemplateOutletContext]="{ value: v || '', index: i }"></ng-container>
+    </div>
+
+  </div>
+</ng-template>

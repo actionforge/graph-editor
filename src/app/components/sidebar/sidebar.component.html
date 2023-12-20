@@ -1,0 +1,77 @@
+<ng-template #nodes>
+
+    <div class="flex flex-col gap-y-4 h-full">
+
+        <!-- Inputs -->
+        <div class="px-4 flex flex-col gap-y-4 mt-4">
+            <!-- Markteplace -->
+            <a *ngIf="isVsCode()" href="https://github.com/marketplace?type=actions" target="_blank" rel="noreferrer">
+                <vscode-button class="secondary w-full h-[2rem] mb-1.5">
+                    Open GitHub Marketplace
+                </vscode-button>
+            </a>
+
+            <!-- Input field -->
+            <vscode-text-area [(ngModel)]="nodeUrl" placeholder="E.g: github.com/actions/checkout"></vscode-text-area>
+
+            <!-- Load Github Action Button -->
+            <vscode-button class="h-[2rem]" [disabled]="nodeUrl.length === 0"
+                (click)="onLoadRegistry($event, nodeUrl)">Load Github Action</vscode-button>
+
+            <vscode-button *ngIf="isDev()" class="h-[2rem]" (click)="onCopyToClipboard($event)">Copy to
+                clipboard</vscode-button>
+        </div>
+
+        <!-- Node List -->
+        <ng-container *ngIf="getBasicNodeTypeDefinitions() | async as nodes">
+            <ng-container *ngIf="nodes === 'loading'" [ngTemplateOutlet]="loadingNodes"></ng-container>
+            <ng-container *ngIf="nodes !== 'loading'">
+                <div *ngIf="nodes.size === 0">
+                </div>
+                <ul *ngIf="nodes.size > 0" class="cid-scrollbar">
+                    <li *ngFor="let node of nodes | keyvalue" (click)="onCreateNode($event, node.value)" (keyup)="0"
+                        tabindex="0" class="flex flex-col gap-y-1 cursor-pointer w-full px-2 py-2 cid-registry"
+                        [matTooltip]="node.value.id + ' ' + node.value.description" matTooltipPosition="left"
+                        matTooltipShowDelay="750">
+
+                        <div class="flex flex-row items-center">
+                            <img *ngIf="node.value.avatar" [src]="node.value.avatar" class="w-10 h-10" alt="" />
+                            <div class="flex flex-col justify-center ml-2 gap-y-1 overflow-hidden">
+
+                                <div class="flex flex-row gap-x-2 justify-between">
+                                    <span class="font-bold whitespace-nowrap cid-name">{{node.value.name}}</span>
+                                    <span class="truncate cid-description">{{getNodeTypeId(node.value)}}</span>
+                                </div>
+
+                                <p class="truncate cid-description" [title]="node.value.description">
+                                    {{node.value.description}}
+                                </p>
+
+                            </div>
+                        </div>
+
+                        <div *ngIf="node.value.verified" class="flex flex-row items-center justify-end gap-x-1">
+                            <ng-icon name="octShieldCheck" size="12" color="#40a6ff"></ng-icon>
+                            <span class="truncate">By
+                                {{node.value.verified.name}}</span>
+                        </div>
+                    </li>
+                </ul>
+            </ng-container>
+        </ng-container>
+
+        <!-- Loading spinner -->
+        <ng-template #loadingNodes>
+            <div class="mx-auto">
+                <vscode-progress-ring></vscode-progress-ring>
+            </div>
+        </ng-template>
+
+    </div>
+
+</ng-template>
+
+<!-- Right Sidebar -->
+<aside class="w-80 h-full z-[1000]">
+    <ng-container *ngTemplateOutlet="nodes"></ng-container>
+</aside>

@@ -1,0 +1,26 @@
+:host {
+  flex-grow: 1;
+  overflow-x: auto;
+}
+
+.cid-button-secondary {
+  background-color: var(--vscode-button-secondaryBackground);
+}
+
+.cid-rete-background {
+  @apply dark:bg-slate-800 h-full w-full;
+  background: linear-gradient(to top, rgb(228, 228, 228) 0%, rgb(255, 255, 255) 100%);
+}
+
+.cid-rete {
+  @apply h-full w-full;
+  @apply bg-rete-light dark:bg-rete-dark;
+
+  background: var(--vscode-editor-background);
+
+  background-position: -1.5px -1.5px, -1.5px -1.5px, -1px -1px, -1px -1px;
+  background-size:
+    20px 20px,
+    100px 100px,
+    100px 100px;
+}

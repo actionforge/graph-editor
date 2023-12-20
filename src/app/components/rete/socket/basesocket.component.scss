@@ -1,0 +1,15 @@
+:host {
+    display: inline-block;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+
+    // Regular ports
+    &:not(.isArray) {
+        vertical-align: middle;
+        border: 1px solid white;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.28);
+        box-sizing: border-box;
+    }
+}

@@ -1,0 +1,26 @@
+.cid-scrollbar {
+    position: relative;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.cid-scrollbar::-webkit-scrollbar {
+    width: 10px;
+}
+
+.cid-scrollbar::-webkit-scrollbar-thumb {
+    background-color: transparent;
+}
+
+.cid-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: var(--vscode-scrollbarSlider-background);
+    transition: background-color .8s linear;
+}
+
+.cid-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: var(--vscode-scrollbarSlider-hoverBackground);
+}
+
+.cid-scrollbar::-webkit-scrollbar-thumb:active {
+    background-color: var(--vscode-scrollbarSlider-activeBackground);
+}
