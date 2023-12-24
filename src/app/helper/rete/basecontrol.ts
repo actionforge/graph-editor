@@ -61,10 +61,6 @@ export class BaseControl<T extends BaseControlType | unknown, N =
         this.required = opts?.required;
         this.options = opts?.options;
         this.default = opts.default;
-
-        if (typeof opts.default !== 'undefined') {
-            this.setValue(opts.default);
-        }
     }
 
     getValue(): N {

@@ -40,8 +40,7 @@
 <ng-template #string let-value="value" let-index="index">
 
   <ng-container *ngIf="!data.multiline; else stringMulti">
-    <input type="text" class="w-full cid-input" (keydown.escape)="onChange($event, index)"
-      (keydown.enter)="onChange($event, index)" [class.cid-required]="isEmpty()" (blur)="onChange($event, index)"
+    <input type="text" class="w-full cid-input" (keydown)="onChange($event, index)" [class.cid-required]="isEmpty()"
       autocomplete="off" [placeholder]="data.hint || ''" [value]="value" [readonly]="isReadOnly()" />
   </ng-container>
 
@@ -58,9 +57,8 @@
 </ng-template>
 
 <ng-template #number let-value="value">
-  <input #input type="number" (keydown.escape)="onChange($event)" (keydown.enter)="onChange($event)"
-    (blur)="onChange($event)" [value]="value" [readonly]="isReadOnly()" [title]="value" [step]="data.step "
-    placeholder=" " />
+  <input #input type="number" (keydown)="onChange($event)" [value]="value" [readonly]="isReadOnly()" [title]="value"
+    [step]="data.step " placeholder=" " />
 </ng-template>
 
 <ng-template #arrayBoolean let-value="value">

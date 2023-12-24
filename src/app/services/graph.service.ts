@@ -6,9 +6,11 @@ import { NodeFactory } from './nodefactory.service';
 import { generateRandomWord } from '../helper/wordlist';
 import { IConnection, IExecution, IGraph, IInput, IOutput, INode } from '../schemas/graph';
 import { NodeEditor } from 'rete';
-import { AreaExtra, Schemes, area, editor } from '../helper/rete/editor';
-import { AreaPlugin } from 'rete-area-plugin';
+import { AreaExtra, Schemes, g_area, g_editor } from '../helper/rete/editor';
+import { AreaPlugin, NodeView } from 'rete-area-plugin';
 import { RegistryUriInfo, uriToString } from '../helper/utils';
+import { VsCodeService } from './vscode.service';
+import { environment } from 'src/environments/environment';
 
 export interface Origin {
   owner: string;
@@ -23,6 +25,7 @@ export interface Origin {
 export class GraphService {
   nf = inject(NodeFactory);
   injector = inject(Injector);
+  vscode = inject(VsCodeService);
 
   private origin$ = new BehaviorSubject<Origin | null>(null);
   originObservable$ = this.origin$.asObservable();
@@ -39,11 +42,33 @@ export class GraphService {
   private nodeCreated = new Subject<{ node: BaseNode, userCreated: boolean }>();
   onNodeCreated$ = this.nodeCreated.asObservable();
 
-  async createNode(nodeId: string, userCreated: boolean): Promise<void> {
+  private inputChangeEvent = new Subject<unknown>();
+  onInputChangeEvent$ = this.inputChangeEvent.asObservable();
+
+  constructor() {
+    if (environment.vscode) {
+      this.onInputChangeEvent$.subscribe(() => {
+        if (g_editor && g_area) {
+          const graph = this.serializeGraph(g_editor, g_area, '');
+          this.vscode.postMessage({ type: 'saveGraph', requestId: -1, data: graph });
+        }
+      });
+    }
+  }
+
+  inputChangeSuject(): Subject<unknown> {
+    return this.inputChangeEvent;
+  }
+
+  async createNode(nodeId: string, userCreated: boolean, inputs?: { [key: string]: IInput }, outputs?: { [key: string]: IOutput }): Promise<BaseNode> {
     const sanitizedNodeId = nodeId.replace(/[^a-zA-Z0-9-]/g, '-');
-    const node: BaseNode = await this.nf.createNode(`${sanitizedNodeId}-${generateRandomWord(3)}`, nodeId);
-    await editor!.addNode(node);
+    const node: BaseNode = await this.nf.createNode(`${sanitizedNodeId}-${generateRandomWord(3)}`, nodeId, this.inputChangeEvent, inputs, outputs);
+
+    await g_editor!.addNode(node);
+
     this.nodeCreated.next({ node: node, userCreated });
+
+    return node
   }
 
   isReadOnly(): boolean {
@@ -107,7 +132,7 @@ export class GraphService {
         }
       }
 
-      const view = area.nodeViews.get(node.id);
+      const view: NodeView | undefined = area.nodeViews.get(node.id);
       nodes.push({
         id: node.id,
         type: node.getType(),
@@ -163,6 +188,9 @@ export class GraphService {
       nodes: nodes,
       registries: [...gs.getRegistries()],
       description,
+      view: {
+        transform: area.area.transform
+      },
     };
 
     return dump(graph, {
@@ -195,14 +223,13 @@ export class GraphService {
     // and identify their associcated nodes as
     // they might need to be updated as well,
     // since a connection got taken away from them.
-
     const promisesConns = [];
 
     const associcatedNodes = new Set<string>();
 
-    for (const conn of editor!.getConnections()) {
+    for (const conn of g_editor!.getConnections()) {
       if (conn.source === nodeId || conn.target === nodeId) {
-        promisesConns.push(editor!.removeConnection(conn.id));
+        promisesConns.push(g_editor!.removeConnection(conn.id));
         if (conn.source === nodeId) {
           associcatedNodes.add(conn.target);
         } else {
@@ -211,13 +238,13 @@ export class GraphService {
       }
     }
 
-    await editor!.removeNode(nodeId);
+    await g_editor!.removeNode(nodeId);
     await Promise.all(promisesConns);
 
     const promisesNodes = [];
 
     for (const nodeId of associcatedNodes) {
-      promisesNodes.push(area!.update("node", nodeId));
+      promisesNodes.push(g_area!.update("node", nodeId));
     }
 
     await Promise.all(promisesNodes);

@@ -34,9 +34,9 @@ export type Schemes = GetSchemes<BaseNode, Conn>;
 export type AreaExtra = AngularArea2D<Schemes>;
 
 export const readonly = new ReadonlyPlugin<Schemes>();
-export let editor: NodeEditor<Schemes> | undefined;
-export let area: AreaPlugin<Schemes, AreaExtra> | undefined;
-export let arrange: AutoArrangePlugin<Schemes, never> | undefined;
+export let g_editor: NodeEditor<Schemes> | undefined;
+export let g_area: AreaPlugin<Schemes, AreaExtra> | undefined;
+export let g_arrange: AutoArrangePlugin<Schemes, never> | undefined;
 
 function addCustomBackground<S extends BaseSchemes, K>(
   area: AreaPlugin<S, K>
@@ -62,9 +62,11 @@ export async function createEditor(element: HTMLElement, injector: Injector): Pr
     e.preventDefault();
   }, true /* use capture to fire this event before area zoom dblclick event listener */);
 
-  editor = new NodeEditor<Schemes>();
-  area = new AreaPlugin<Schemes, AreaExtra>(element);
-  arrange = new AutoArrangePlugin<Schemes>();
+  const editor = new NodeEditor<Schemes>();
+
+  g_editor = editor;
+  g_area = new AreaPlugin<Schemes, AreaExtra>(element);
+  g_arrange = new AutoArrangePlugin<Schemes>();
 
   const connection = new ConnectionPlugin<Schemes, AreaExtra>();
 
@@ -99,32 +101,46 @@ export async function createEditor(element: HTMLElement, injector: Injector): Pr
 
   connection.addPreset(ConnectionPresets.classic.setup());
 
-  addCustomBackground(area);
+  addCustomBackground(g_area);
 
-  editor.use(area);
+  g_editor.use(g_area);
 
-  area.use(connection);
-  area.use(angularRender);
+  g_area.use(connection);
+  g_area.use(angularRender);
 
-  arrange.addPreset(ArrangePresets.classic.setup());
-  area.use(arrange);
+  g_arrange.addPreset(ArrangePresets.classic.setup());
+  g_area.use(g_arrange);
 
-  AreaExtensions.simpleNodesOrder(area)
-  AreaExtensions.selectableNodes(area, AreaExtensions.selector(), { accumulating: AreaExtensions.accumulateOnCtrl() });
-  AreaExtensions.snapGrid(area, { size: 10, dynamic: true });
-  AreaExtensions.showInputControl<Schemes>(area, ({ hasAnyConnection }) => {
+  AreaExtensions.simpleNodesOrder(g_area)
+  AreaExtensions.selectableNodes(g_area, AreaExtensions.selector(), { accumulating: AreaExtensions.accumulateOnCtrl() });
+  AreaExtensions.snapGrid(g_area, { size: 10, dynamic: true });
+  AreaExtensions.showInputControl<Schemes>(g_area, ({ hasAnyConnection }) => {
     return !hasAnyConnection;
   })
 
-  editor.addPipe((context: Root<Schemes>) => {
-    const { type } = context as { type: string };
+  g_editor.addPipe((context: Root<Schemes>) => {
+    const { type, data } = context as { type: string, data: { id: string, source: string, sourceOutput: string } };
     switch (type) {
+      case "connectioncreated": {
+        const node: BaseNode | undefined = editor.getNode(data.source);
+        if (node) {
+          node.addOutgoingConnection(data.sourceOutput);
+        }
+        break;
+      }
+      case "connectionremoved": {
+        const node: BaseNode | undefined = editor.getNode(data.source)
+        if (node) {
+          node.removeOutgoingConnection(data.sourceOutput);
+        }
+        break;
+      }
       case "connectioncreate": {
 
         const { data } = context as { type: string, data: BaseConnection<BaseNode, BaseNode> };
 
-        const sourceNode: BaseNode | undefined = editor!.getNode(data.source);
-        const targetNode: BaseNode | undefined = editor!.getNode(data.target);
+        const sourceNode: BaseNode | undefined = g_editor!.getNode(data.source);
+        const targetNode: BaseNode | undefined = g_editor!.getNode(data.target);
 
         if (sourceNode && targetNode) {
 
@@ -172,12 +188,12 @@ export async function createEditor(element: HTMLElement, injector: Injector): Pr
     return context;
   })
 
-  await arrange.layout();
+  await g_arrange.layout();
 
   return {
-    editor,
-    area,
-    arrange,
+    editor: g_editor,
+    area: g_area,
+    arrange: g_arrange,
     connection,
   };
 }
