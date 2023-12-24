@@ -15,7 +15,6 @@ import { YamlService } from 'src/app/services/yaml.service';
 import { allComponents, provideVSCodeDesignSystem } from "@vscode/webview-ui-toolkit";
 import { VsCodeMessage, VsCodeService } from 'src/app/services/vscode.service';
 import { svgEnvGetIcon, svgEnvArray, svgArchSwitch, svgFor, svgPlatformSwitch, svgNegate, svgBoolXor, svgBoolXand, svgBoolAnd, svgBoolOr, svgBranchIcon, svgParallelFor, svgParallelExec, svgWaitFor } from 'src/app/helper/icons';
-import { INodeTypeDefinitionBasic } from 'src/app/helper/rete/interfaces/nodes';
 import { load } from 'js-yaml';
 import { Observable } from 'rxjs';
 import { NotificationService, NotificationType } from 'src/app/services/notification.service';
@@ -27,6 +26,7 @@ import { SocketData } from 'rete-connection-plugin';
 import { BaseInput } from 'src/app/helper/rete/baseinput';
 import { BaseOutput } from 'src/app/helper/rete/baseoutput';
 import { Area2D } from 'rete-area-plugin';
+import { Transform } from 'rete-area-plugin/_types/area';
 
 provideVSCodeDesignSystem().register(
   // vsCodeButton(),
@@ -52,8 +52,6 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   cdr = inject(ChangeDetectorRef);
 
   @ViewChild('rete') container!: ElementRef<HTMLElement>;
-
-  loading = false;
 
   nodeButtonSeries = [
     [
@@ -167,19 +165,15 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
         const d = data as {
           data: string;
           uri: string;
+          transform: Transform
         }
 
         const graph = load(d.data) as IGraph | null;
-        void this.openGraph(d.uri, graph)
+        void this.openGraph(d.uri, graph, d.transform)
           .catch((error) => {
             console.error(error);
             void this.ns.showNotification(NotificationType.Error, getErrorMessage(error));
           })
-        break;
-      }
-      case 'getFileData': {
-        const graph = this.gs.serializeGraph(g_editor!, g_area!, '');
-        this.vscode.postMessage({ type: 'callbackResponse', requestId, data: graph });
         break;
       }
     }
@@ -205,47 +199,10 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     return this.gs.originObservable$;
   }
 
-  async openGraph(uri: string, graph: IGraph | null): Promise<void> {
-    this.loading = true;
-
-    try {
-      // Assume this is a new document if graph is empty and prefill with a trigger node
-      if (!graph || Object.keys(graph).length === 0) {
-        await this.nr.loadBasicNodeTypeDefinitions(new Set(["gh-start@v1"]));
-
-        const nodeDef = (this.nr.getBasicNodeTypeDefinitionsSync() as Map<string, INodeTypeDefinitionBasic>).get("gh-start@v1");
-
-        const startNodeId = "gh-start";
-
-        graph = {
-          description: '',
-          entry: startNodeId,
-          nodes: [
-            {
-              id: startNodeId,
-              type: nodeDef!.id,
-              inputs: {},
-              position: { x: 100, y: 100 },
-              settings: undefined,
-            },
-          ],
-          connections: [],
-          executions: [],
-          registries: [],
-        };
-      }
-
-      await this.loadGraphToEditor(graph);
-
-      this.gs.setRegistries(new Set(graph.registries));
-      this.gs.setEntry(graph.entry);
-      this.gs.setReadOnly(environment.web || uri.startsWith("git:"));
-
-      await this.nr.loadBasicNodeTypeDefinitions(this.gs.getRegistries());
-
-    } finally {
-      this.loading = false;
-    }
+  async openGraph(uri: string, graph: IGraph | null, transform: Transform | null): Promise<void> {
+    await this.gs.loadGraph(graph, environment.web || uri.startsWith("git:"), async (g: IGraph) => {
+      await this.loadGraphToEditor(g, transform);
+    });
   }
 
   ngOnDestroy(): void {
@@ -253,11 +210,11 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   async onCreateNode(_event: MouseEvent, nodeTypeId: string): Promise<void> {
-    await this.gs.createNode(nodeTypeId, true);
+    await this.gs.createNode(nodeTypeId, null, true);
   }
 
   async createAndAddNodes(node: INode, nodes: Map<string, BaseNode>): Promise<void> {
-    const n = await this.gs.createNode(node.type, false, node.inputs, node.outputs);
+    const n = await this.gs.createNode(node.type, node.id, false, node.inputs, node.outputs);
     if (node.settings) {
       n.setSettings(node.settings);
     }
@@ -269,16 +226,16 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     nodes.set(node.id, n);
   }
 
-  async loadGraphToEditor(graph: IGraph): Promise<void> {
+  async loadGraphToEditor(graph: IGraph, transform: Transform | null): Promise<void> {
     if (!g_editor) {
       throw new Error('Editor not initialized');
     }
 
     await g_editor.clear();
 
-    if (graph.view) {
-      await g_area!.area.zoom(graph.view.transform.k, 0, 0);
-      await g_area!.area.translate(graph.view.transform.x, graph.view.transform.y);
+    if (transform) {
+      await g_area!.area.zoom(transform.k, 0, 0);
+      await g_area!.area.translate(transform.x, transform.y);
     }
 
     await this.nr.loadFullNodeTypeDefinitions(new Set(graph.nodes.map(n => n.type)));
@@ -399,11 +356,16 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
       area.addPipe((context: Root<Schemes> | AreaExtra | Area2D<Schemes>) => {
         const { type } = context as { type: string };
         switch (type) {
-          case "pointerup": // finish dragging
           case "nodedragged": {
-            if (!this.loading) {
+            if (!this.gs.isLoading()) {
               const graph = this.gs.serializeGraph(editor, area!, '');
               void this.vscode.postMessage({ type: 'saveGraph', requestId: -1, data: graph });
+            }
+            break;
+          }
+          case "pointerup": { // finish dragging
+            if (!this.gs.isLoading()) {
+              void this.vscode.postMessage({ type: 'saveTransform', requestId: -1, data: area.area.transform });
             }
             break;
           }
@@ -424,7 +386,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
             // loading of the graph, or are user interactions. To avoid
             // the graph file in VS Code being marked as dirty, only
             // send the 'saveGraph' message outside of the loading operation.
-            if (!this.loading) {
+            if (!this.gs.isLoading()) {
               const graph = this.gs.serializeGraph(editor, area!, '');
               void this.vscode.postMessage({ type: 'saveGraph', requestId: -1, data: graph });
             }
@@ -454,7 +416,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
       const graph: IGraph = await this.gw.graphRead({
         provider: 'github', owner, repo, ref, path,
       });
-      await this.openGraph(location.pathname, graph);
+      await this.openGraph(location.pathname, graph, null);
     }
   }
 

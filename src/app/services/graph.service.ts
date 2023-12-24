@@ -11,6 +11,10 @@ import { AreaPlugin, NodeView } from 'rete-area-plugin';
 import { RegistryUriInfo, uriToString } from '../helper/utils';
 import { VsCodeService } from './vscode.service';
 import { environment } from 'src/environments/environment';
+import { Registry } from './registry.service';
+import { INodeTypeDefinitionBasic } from '../helper/rete/interfaces/nodes';
+
+import AsyncLock from 'async-lock';
 
 export interface Origin {
   owner: string;
@@ -19,6 +23,8 @@ export interface Origin {
   path: string;
 }
 
+export type LoadingGraphFunction = (g: IGraph) => Promise<void>;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -26,6 +32,11 @@ export class GraphService {
   nf = inject(NodeFactory);
   injector = inject(Injector);
   vscode = inject(VsCodeService);
+
+  loadingLock = new AsyncLock();
+
+  private loading$ = new BehaviorSubject<boolean>(false);
+  loadingObservable$ = this.loading$.asObservable();
 
   private origin$ = new BehaviorSubject<Origin | null>(null);
   originObservable$ = this.origin$.asObservable();
@@ -74,6 +85,95 @@ export class GraphService {
     this.nodeCreated.next({ node: node, userCreated });
 
     return node
+  }
+
+  async deleteNode(nodeId: string): Promise<void> {
+    // First remove all connections of the node
+    // and identify their associcated nodes as
+    // they might need to be updated as well,
+    // since a connection got taken away from them.
+    const promisesConns = [];
+
+    const associcatedNodes = new Set<string>();
+
+    for (const conn of g_editor!.getConnections()) {
+      if (conn.source === nodeId || conn.target === nodeId) {
+        promisesConns.push(g_editor!.removeConnection(conn.id));
+        if (conn.source === nodeId) {
+          associcatedNodes.add(conn.target);
+        } else {
+          associcatedNodes.add(conn.source);
+        }
+      }
+    }
+
+    await g_editor!.removeNode(nodeId);
+    await Promise.all(promisesConns);
+
+    const promisesNodes = [];
+
+    for (const nodeId of associcatedNodes) {
+      promisesNodes.push(g_area!.update("node", nodeId));
+    }
+
+    await Promise.all(promisesNodes);
+  }
+
+  async loadGraph(graph: IGraph | null, readOnly: boolean, cb: LoadingGraphFunction): Promise<void> {
+
+    const nr = this.injector.get(Registry);
+
+    try {
+      this.loading$.next(true);
+
+      await this.loadingLock.acquire("loadGraph", async () => {
+        // Assume this is a new document if graph is empty and prefill with a trigger node
+        if (!graph || Object.keys(graph).length === 0) {
+          await nr.loadBasicNodeTypeDefinitions(new Set(["gh-start@v1"]));
+
+          const nodeDef = (nr.getBasicNodeTypeDefinitionsSync() as Map<string, INodeTypeDefinitionBasic>).get("gh-start@v1");
+          if (!nodeDef) {
+            throw new Error("gh-start@v1 not found");
+          }
+
+          const startNodeId = "gh-start";
+
+          graph = {
+            description: '',
+            entry: startNodeId,
+            nodes: [
+              {
+                id: startNodeId,
+                type: nodeDef!.id,
+                inputs: {},
+                position: { x: 100, y: 100 },
+                settings: undefined,
+              },
+            ],
+            connections: [],
+            executions: [],
+            registries: [],
+          };
+        }
+
+        const prom = nr.loadBasicNodeTypeDefinitions(this.getRegistries());
+
+        await cb(graph);
+
+        this.setRegistries(new Set(graph.registries));
+        this.setEntry(graph.entry);
+        this.setReadOnly(readOnly);
+
+        await Promise.all([prom]);
+      });
+
+    } finally {
+      this.loading$.next(false);
+    }
+  }
+
+  isLoading(): boolean {
+    return this.loading$.value;
   }
 
   isReadOnly(): boolean {
@@ -193,9 +293,6 @@ export class GraphService {
       nodes: nodes,
       registries: [...gs.getRegistries()],
       description,
-      view: {
-        transform: area.area.transform
-      },
     };
 
     return dump(graph, {
@@ -221,38 +318,6 @@ export class GraphService {
     const registries = this.graphRegistries$.value;
     registries.add(uriToString(registry));
     this.graphRegistries$.next(registries);
-  }
-
-  async deleteNode(nodeId: string): Promise<void> {
-    // First remove all connections of the node
-    // and identify their associcated nodes as
-    // they might need to be updated as well,
-    // since a connection got taken away from them.
-    const promisesConns = [];
-
-    const associcatedNodes = new Set<string>();
-
-    for (const conn of g_editor!.getConnections()) {
-      if (conn.source === nodeId || conn.target === nodeId) {
-        promisesConns.push(g_editor!.removeConnection(conn.id));
-        if (conn.source === nodeId) {
-          associcatedNodes.add(conn.target);
-        } else {
-          associcatedNodes.add(conn.source);
-        }
-      }
-    }
-
-    await g_editor!.removeNode(nodeId);
-    await Promise.all(promisesConns);
-
-    const promisesNodes = [];
-
-    for (const nodeId of associcatedNodes) {
-      promisesNodes.push(g_area!.update("node", nodeId));
-    }
-
-    await Promise.all(promisesNodes);
   }
 
   getRegistries(): Set<string> {

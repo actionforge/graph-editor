@@ -32,6 +32,16 @@ export class VsCodeService {
     constructor() {
         if (typeof acquireVsCodeApi !== 'undefined') {
             this._vsCode = acquireVsCodeApi();
+
+            window.addEventListener('message', (event: Event) => {
+                const { type } = (event as MessageEvent).data;
+                switch (type) {
+                    default: {
+                        this.message$.next(event as unknown as VsCodeMessage);
+                        break;
+                    }
+                }
+            });
         }
     }
 

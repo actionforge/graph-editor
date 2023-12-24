@@ -7,7 +7,6 @@ export interface IGraph {
     connections: IConnection[];
     executions: IExecution[];
     registries: string[];
-    view?: IView;
 }
 
 export type IInput = unknown | string[] | number[] | boolean[] | string | number | boolean;
