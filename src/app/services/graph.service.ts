@@ -223,8 +223,6 @@ export class GraphService {
     // and identify their associcated nodes as
     // they might need to be updated as well,
     // since a connection got taken away from them.
-
-    console.log("Delete node");
     const promisesConns = [];
 
     const associcatedNodes = new Set<string>();

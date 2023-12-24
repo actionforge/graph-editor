@@ -250,7 +250,6 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.messageSubscription.unsubscribe();
-    console.log("ngOnDestroy")
   }
 
   async onCreateNode(_event: MouseEvent, nodeTypeId: string): Promise<void> {
@@ -365,7 +364,6 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
       switch (type) {
         case "connectionpick": {
           const { data } = context as unknown as { data: { socket: SocketData } };
-          console.log("Connection picked on socket");
           const node: BaseNode | undefined = editor.getNode(data.socket.nodeId);
           if (node) {
             node.addOutgoingConnection(data.socket.key);
@@ -377,13 +375,11 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
           if (data.socket) {
             // Use the node id, depending on where the connection was dropped.
             // Either on the socket of the output node, or on the socket of the input node.
-            console.log("Connection dropped on socket");
             const node: BaseNode | undefined = editor.getNode(data.initial.side === 'output' ? data.initial.nodeId : data.socket.nodeId);
             if (node) {
               node.removeOutgoingConnection(data.initial.key);
             }
           } else {
-            console.log("Connection dropped on empty space");
             const node: BaseNode | undefined = editor.getNode(data.initial.nodeId);
             if (node) {
               node.removeOutgoingConnection(data.initial.key);

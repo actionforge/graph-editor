@@ -122,7 +122,6 @@ export async function createEditor(element: HTMLElement, injector: Injector): Pr
     const { type, data } = context as { type: string, data: { id: string, source: string, sourceOutput: string } };
     switch (type) {
       case "connectioncreated": {
-        console.log("Connection created")
         const node: BaseNode | undefined = editor.getNode(data.source);
         if (node) {
           node.addOutgoingConnection(data.sourceOutput);
@@ -130,7 +129,6 @@ export async function createEditor(element: HTMLElement, injector: Injector): Pr
         break;
       }
       case "connectionremoved": {
-        console.log("Connection removed")
         const node: BaseNode | undefined = editor.getNode(data.source)
         if (node) {
           node.removeOutgoingConnection(data.sourceOutput);
