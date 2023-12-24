@@ -60,9 +60,14 @@ export class GraphService {
     return this.inputChangeEvent;
   }
 
-  async createNode(nodeId: string, userCreated: boolean, inputs?: { [key: string]: IInput }, outputs?: { [key: string]: IOutput }): Promise<BaseNode> {
-    const sanitizedNodeId = nodeId.replace(/[^a-zA-Z0-9-]/g, '-');
-    const node: BaseNode = await this.nf.createNode(`${sanitizedNodeId}-${generateRandomWord(3)}`, nodeId, this.inputChangeEvent, inputs, outputs);
+  async createNode(nodeTypeId: string, nodeId: string | null, userCreated: boolean, inputs?: { [key: string]: IInput }, outputs?: { [key: string]: IOutput }): Promise<BaseNode> {
+    const sanitizedNodeId = nodeTypeId.replace(/[^a-zA-Z0-9-]/g, '-');
+
+    if (!nodeId) {
+      nodeId = `${sanitizedNodeId}-${generateRandomWord(3)}`
+    }
+
+    const node: BaseNode = await this.nf.createNode(nodeId, nodeTypeId, this.inputChangeEvent, inputs, outputs);
 
     await g_editor!.addNode(node);
 
