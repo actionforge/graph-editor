@@ -9,7 +9,7 @@ import { provideVSCodeDesignSystem, vsCodeButton } from "@vscode/webview-ui-tool
 import { getErrorMessage } from 'src/app/helper/utils';
 import { environment } from 'src/environments/environment';
 import { Clipboard } from '@angular/cdk/clipboard';
-import { area, editor } from 'src/app/helper/rete/editor';
+import { g_area, g_editor } from 'src/app/helper/rete/editor';
 
 provideVSCodeDesignSystem().register(vsCodeButton());
 
@@ -36,7 +36,7 @@ export class SidebarComponent {
   }
 
   onCopyToClipboard(_event: MouseEvent): void {
-    const graph = this.gs.serializeGraph(editor!, area!, "Dev");
+    const graph = this.gs.serializeGraph(g_editor!, g_area!, "Dev");
     this.clipboard.copy(graph);
   }
 

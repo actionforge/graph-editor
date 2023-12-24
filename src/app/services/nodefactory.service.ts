@@ -3,14 +3,17 @@ import { BaseNode } from "../helper/rete/basenode";
 import { IInputDefinition, INodeTypeDefinitionFull, IOutputDefinition } from "../helper/rete/interfaces/nodes";
 import { Registry } from "./registry.service";
 import { IInput, IOutput } from "../schemas/graph";
+import { VsCodeService } from "./vscode.service";
+import { Subject } from "rxjs";
 
 @Injectable({
     providedIn: 'root'
 })
 export class NodeFactory {
     injector = inject(Injector);
+    vscode = inject(VsCodeService);
 
-    async createNode(id: string, type: string, inputs?: { [key: string]: IInput }, outputs?: { [key: string]: IOutput }): Promise<BaseNode> {
+    async createNode(id: string, type: string, inputChangeEvent: Subject<unknown>, inputs?: { [key: string]: IInput }, outputs?: { [key: string]: IOutput }): Promise<BaseNode> {
 
         const nr = this.injector.get(Registry);
 
@@ -67,13 +70,13 @@ export class NodeFactory {
 
             for (const [inputId, inputDef] of inputDefs) {
 
-                const input = n.addInput2(inputId, inputDef, false);
+                const input = n.addInput2(inputId, inputDef, inputChangeEvent, false);
 
                 // Regard the group initial value only for new nodes
                 if (inputs === undefined) {
                     if (inputDef.group_initial && typeof inputDef.group_initial === 'number') {
                         for (let i = 0; i < inputDef.group_initial; ++i) {
-                            await n.appendInputValue(input);
+                            await n.appendInputValue(input, inputChangeEvent);
                         }
                     }
                 }

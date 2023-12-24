@@ -12,7 +12,7 @@ import { BaseControl, BaseControlType } from "src/app/helper/rete/basecontrol";
 import { BaseInput } from "src/app/helper/rete/baseinput";
 import { BaseNode } from "src/app/helper/rete/basenode";
 import { BaseOutput } from "src/app/helper/rete/baseoutput";
-import { area, editor } from "src/app/helper/rete/editor";
+import { g_area, g_editor } from "src/app/helper/rete/editor";
 import { GraphService } from "src/app/services/graph.service";
 import { NodeFactory } from "src/app/services/nodefactory.service";
 import { Registry } from "src/app/services/registry.service";
@@ -68,24 +68,24 @@ export class BaseNodeComponent implements OnChanges {
     this.cdr.detach();
   }
 
-  isCompact(): boolean {
-    return this.data.getDefinition().compact;
-  }
-
   ngOnChanges(): void {
     this.cdr.detectChanges();
     requestAnimationFrame(() => this.rendered());
     this.seed++; // force render sockets
   }
 
+  isCompact(): boolean {
+    return this.data.getDefinition().compact;
+  }
+
   async onShowHideConnectedPorts(event: MouseEvent): Promise<void> {
     event.stopPropagation();
     event.preventDefault();
 
-    const n = editor!.getNode(this.data.id);
+    const n = g_editor!.getNode(this.data.id);
     n.getSettings().folded = Boolean(!n.getSettings().folded);
 
-    await area!.update("node", this.data.id);
+    await g_area!.update("node", this.data.id);
     this.cdr.detectChanges();
   }
 
@@ -101,20 +101,20 @@ export class BaseNodeComponent implements OnChanges {
 
     await this.data.appendOutputValue(output);
 
-    await area!.update("node", this.data.id);
+    await g_area!.update("node", this.data.id);
     this.cdr.detectChanges();
   }
 
   async onAppendInputValue(event: MouseEvent, input: BaseInput): Promise<void> {
     event.stopPropagation();
 
-    await this.data.appendInputValue(input);
+    await this.data.appendInputValue(input, this.gs.inputChangeSuject());
 
     const control = input.control as BaseControl<BaseControlType> | null;
     if (control) {
-      await area!.update("control", control.id);
+      await g_area!.update("control", control.id);
     }
-    await area!.update("node", this.data.id);
+    await g_area!.update("node", this.data.id);
     this.cdr.detectChanges();
   }
 
@@ -122,7 +122,7 @@ export class BaseNodeComponent implements OnChanges {
     event.stopPropagation();
 
     await this.data.popOutputValue(output);
-    await area!.update("node", this.data.id);
+    await g_area!.update("node", this.data.id);
     this.cdr.detectChanges();
   }
 
@@ -132,9 +132,9 @@ export class BaseNodeComponent implements OnChanges {
     await this.data.popInputValue(input);
     const control = input.control as BaseControl<BaseControlType> | null;
     if (control) {
-      await area!.update("control", control.id);
+      await g_area!.update("control", control.id);
     }
-    await area!.update("node", this.data.id);
+    await g_area!.update("node", this.data.id);
     this.cdr.detectChanges();
   }
 

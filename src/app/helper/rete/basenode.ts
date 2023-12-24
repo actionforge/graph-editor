@@ -5,6 +5,7 @@ import { IInput, ISettings } from "src/app/schemas/graph";
 import { BaseControl, BaseControlType } from "./basecontrol";
 import { BaseInput } from "./baseinput";
 import { BaseOutput } from "./baseoutput";
+import { Subject } from "rxjs";
 
 const portTypeToControlTypeMapping = new Map<string, BaseControlType>([
   ["bool", BaseControlType.bool],
@@ -133,7 +134,7 @@ export class BaseNode extends ClassicPreset.Node {
     return output;
   }
 
-  addInput2(inputName: string, def: IInputDefinition, sub: boolean): BaseInput {
+  addInput2(inputName: string, def: IInputDefinition, inputChangeEvent: Subject<unknown>, sub: boolean): BaseInput {
     const socket = new BaseSocket({
       key: inputName,
       type: def.type,
@@ -160,11 +161,17 @@ export class BaseNode extends ClassicPreset.Node {
           multiline: def.multiline,
           setValue: (value: unknown) => {
             this.setInputValue(inputName, value);
+
+            inputChangeEvent.next(value);
           },
           getValue: (): unknown => {
             return this.getInputValues().get(inputName) ?? def.default ?? undefined;
           }
         }));
+
+        if (def.default) {
+          this.setInputValue(inputName, def.default);
+        }
       }
     }
     return input;
@@ -195,7 +202,7 @@ export class BaseNode extends ClassicPreset.Node {
     }
   }
 
-  async appendInputValue(input: BaseInput): Promise<void> {
+  async appendInputValue(input: BaseInput, inputChangeEvent: Subject<unknown>): Promise<void> {
     if (input.def.group) {
 
       const inputCount = getHighestSubPortIndex(input.socket.name, [...this.getInputValues().keys()]);
@@ -213,7 +220,7 @@ export class BaseNode extends ClassicPreset.Node {
         hint: inputHint,
         index: Number(input.index) + 1 /* +1 to be higher than input index */
           + inputCount + 1, /* another +1 as highestInputIndex is -1 and first input index starts at 0, */
-      }, true);
+      }, inputChangeEvent, true);
     } else if (input.isArray()) {
       let v = this.inputValues.get(input.socket.name) as unknown[] | undefined;
       if (v === undefined) {

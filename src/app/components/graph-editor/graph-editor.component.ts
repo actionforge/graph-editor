@@ -4,7 +4,7 @@ import { Output, Socket } from 'rete/_types/presets/classic';
 import { BaseConnection } from 'src/app/helper/rete/baseconnection';
 import { BaseNode } from 'src/app/helper/rete/basenode';
 import { BaseSocket } from 'src/app/helper/rete/basesocket';
-import { Schemes, area, arrange, createEditor, editor, readonly } from 'src/app/helper/rete/editor';
+import { Schemes, g_area, g_arrange, createEditor, g_editor, readonly, AreaExtra } from 'src/app/helper/rete/editor';
 import { IGraph, INode } from 'src/app/schemas/graph';
 import { GraphService, Origin } from 'src/app/services/graph.service';
 import { NodeFactory } from 'src/app/services/nodefactory.service';
@@ -26,6 +26,7 @@ import { featherSearch } from '@ng-icons/feather-icons';
 import { SocketData } from 'rete-connection-plugin';
 import { BaseInput } from 'src/app/helper/rete/baseinput';
 import { BaseOutput } from 'src/app/helper/rete/baseoutput';
+import { Area2D } from 'rete-area-plugin';
 
 provideVSCodeDesignSystem().register(
   // vsCodeButton(),
@@ -44,9 +45,11 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   nf = inject(NodeFactory);
   ns = inject(NotificationService);
   gw = inject(GatewayService);
+
   injector = inject(Injector);
   yamlService = inject(YamlService);
   vscode = inject(VsCodeService);
+  cdr = inject(ChangeDetectorRef);
 
   @ViewChild('rete') container!: ElementRef<HTMLElement>;
 
@@ -175,7 +178,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
         break;
       }
       case 'getFileData': {
-        const graph = this.gs.serializeGraph(editor!, area!, '');
+        const graph = this.gs.serializeGraph(g_editor!, g_area!, '');
         this.vscode.postMessage({ type: 'callbackResponse', requestId, data: graph });
         break;
       }
@@ -246,7 +249,8 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.messageSubscription.unsubscribe()
+    this.messageSubscription.unsubscribe();
+    console.log("ngOnDestroy")
   }
 
   async onCreateNode(_event: MouseEvent, nodeTypeId: string): Promise<void> {
@@ -254,26 +258,29 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   async createAndAddNodes(node: INode, nodes: Map<string, BaseNode>): Promise<void> {
-    const n = await this.nf.createNode(node.id, node.type, node.inputs, node.outputs);
+    const n = await this.gs.createNode(node.type, false, node.inputs, node.outputs);
     if (node.settings) {
       n.setSettings(node.settings);
     }
 
-    await editor!.addNode(n);
-
     if (node.position?.x > 0 && node.position?.y > 0) {
-      await area!.translate(n.id, node.position);
+      await g_area!.translate(n.id, node.position);
     }
 
     nodes.set(node.id, n);
   }
 
   async loadGraphToEditor(graph: IGraph): Promise<void> {
-    if (!editor) {
+    if (!g_editor) {
       throw new Error('Editor not initialized');
     }
 
-    await editor.clear();
+    await g_editor.clear();
+
+    if (graph.view) {
+      await g_area!.area.zoom(graph.view.transform.k, 0, 0);
+      await g_area!.area.translate(graph.view.transform.x, graph.view.transform.y);
+    }
 
     await this.nr.loadFullNodeTypeDefinitions(new Set(graph.nodes.map(n => n.type)));
 
@@ -299,7 +306,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
         if (srcSocket !== undefined && dstSocket !== undefined) {
           const c = new BaseConnection(sourceNode, srcSocket.socket as BaseSocket, targetNode, dstSocket.socket as BaseSocket);
-          createConnections.push(editor.addConnection(c))
+          createConnections.push(g_editor.addConnection(c))
 
         }
       }
@@ -316,7 +323,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
         if (srcSocket !== undefined && dstSocket !== undefined) {
 
-          const promise = editor.addConnection(new BaseConnection(sourceNode, srcSocket.socket as BaseSocket, targetNode, dstSocket.socket as BaseSocket));
+          const promise = g_editor.addConnection(new BaseConnection(sourceNode, srcSocket.socket as BaseSocket, targetNode, dstSocket.socket as BaseSocket));
           createConnections.push(promise);
         }
       }
@@ -325,11 +332,9 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     await Promise.all(createConnections);
 
     for (const node of nodes.values()) {
-      void area!.update("node", node.id);
+      void g_area!.update("node", node.id);
     }
   }
-
-  cdr = inject(ChangeDetectorRef);
 
   async ngAfterViewInit() {
 
@@ -393,34 +398,27 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
       return context;
     });
 
-    editor.addPipe((context: Root<Schemes>) => {
-      const { type, data } = context as { type: string, data: { id: string, source: string, sourceOutput: string } };
-      switch (type) {
-        case "connectioncreated": {
-          console.log("Connection created")
-          const node: BaseNode | undefined = editor.getNode(data.source);
-          if (node) {
-            node.addOutgoingConnection(data.sourceOutput);
-          }
-          break;
-        }
-        case "connectionremoved": {
-          console.log("Connection removed")
-          const node: BaseNode | undefined = editor.getNode(data.source)
-          if (node) {
-            node.removeOutgoingConnection(data.sourceOutput);
-          }
-          break;
-        }
-      }
-      return context;
-    });
-
     if (environment.vscode) {
+
+      area.addPipe((context: Root<Schemes> | AreaExtra | Area2D<Schemes>) => {
+        const { type } = context as { type: string };
+        switch (type) {
+          case "pointerup": // finish dragging
+          case "nodedragged": {
+            if (!this.loading) {
+              const graph = this.gs.serializeGraph(editor, area!, '');
+              void this.vscode.postMessage({ type: 'saveGraph', requestId: -1, data: graph });
+            }
+            break;
+          }
+        }
+        return context;
+      })
 
       editor.addPipe((context: Root<Schemes>) => {
         const { type } = context as { type: string };
         switch (type) {
+          case "nodetranslated":
           case "nodecreated":
           case "noderemoved":
           case "connectioncreated":
@@ -432,7 +430,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
             // send the 'saveGraph' message outside of the loading operation.
             if (!this.loading) {
               const graph = this.gs.serializeGraph(editor, area!, '');
-              this.vscode.postMessage({ type: 'saveGraph', requestId: -1, data: graph });
+              void this.vscode.postMessage({ type: 'saveGraph', requestId: -1, data: graph });
             }
             break;
           }
@@ -465,6 +463,6 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   async arrangeNodes(): Promise<void> {
-    await arrange!.layout();
+    await g_arrange!.layout();
   }
 }

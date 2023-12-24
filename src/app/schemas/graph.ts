@@ -1,3 +1,5 @@
+
+
 export interface IGraph {
     description: string;
     entry: string;
@@ -5,10 +7,20 @@ export interface IGraph {
     connections: IConnection[];
     executions: IExecution[];
     registries: string[];
+    view?: IView;
 }
 
 export type IInput = unknown | string[] | number[] | boolean[] | string | number | boolean;
 export type IOutput = string | null;
+
+export interface IView {
+    transform: {
+        x: number;
+        y: number;
+        k: number;
+    }
+
+}
 
 export type ISettings = {
     folded: boolean;
