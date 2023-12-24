@@ -12,7 +12,6 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    // "sourceMap": true,
     "inlineSources": true,
     "inlineSourceMap": true,
     "resolveJsonModule": true,

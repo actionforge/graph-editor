@@ -38,8 +38,9 @@
           },
           "configurations": {
             "web": {
+              "tsConfig": "tsconfig.web.json",
               "optimization": true,
-              "sourceMap": true,
+              "sourceMap": false,
               "namedChunks": true,
               "aot": true,
               "extractLicenses": true,
@@ -70,6 +71,7 @@
               ]
             },
             "vscode": {
+              "tsConfig": "tsconfig.vscode.json",
               "optimization": true,
               "sourceMap": false,
               "namedChunks": false,
