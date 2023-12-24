@@ -22,6 +22,7 @@ export type VsCodeMessage = {
 })
 export class VsCodeService {
     _vsCode: VsCodeApi | undefined;
+
     _requestId = 0;
     _callbacks = new Map<number, (data: unknown) => void>();
 
@@ -50,10 +51,6 @@ export class VsCodeService {
                 }
             }
         });
-    }
-
-    isVsCode(): boolean {
-        return !!this._vsCode;
     }
 
     postMessageWithResponse<R = unknown>(type: string, data: R): Promise<unknown> {
