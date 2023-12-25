@@ -60,7 +60,7 @@ export class SidebarComponent {
     event.preventDefault();
     event.stopPropagation();
 
-    await this.gs.createNode(nodeType.id, true);
+    await this.gs.createNode(nodeType.id, null, true);
   }
 
   getNodeTypeId(nodeType: INodeTypeDefinitionBasic): string {

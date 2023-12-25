@@ -1,7 +1,7 @@
 import { Injectable, Injector, inject } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { BaseNode } from '../helper/rete/basenode';
-import { dump } from 'js-yaml';
+import { dump, load } from 'js-yaml';
 import { NodeFactory } from './nodefactory.service';
 import { generateRandomWord } from '../helper/wordlist';
 import { IConnection, IExecution, IGraph, IInput, IOutput, INode } from '../schemas/graph';
@@ -10,7 +10,10 @@ import { AreaExtra, Schemes, g_area, g_editor } from '../helper/rete/editor';
 import { AreaPlugin, NodeView } from 'rete-area-plugin';
 import { RegistryUriInfo, uriToString } from '../helper/utils';
 import { VsCodeService } from './vscode.service';
-import { environment } from 'src/environments/environment';
+import { Registry } from './registry.service';
+import { INodeTypeDefinitionBasic } from '../helper/rete/interfaces/nodes';
+
+import AsyncLock from 'async-lock';
 
 export interface Origin {
   owner: string;
@@ -19,6 +22,8 @@ export interface Origin {
   path: string;
 }
 
+export type LoadingGraphFunction = (g: IGraph) => Promise<void>;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -26,6 +31,10 @@ export class GraphService {
   nf = inject(NodeFactory);
   injector = inject(Injector);
   vscode = inject(VsCodeService);
+
+  loadingLock = new AsyncLock();
+
+  lastGraph = '';
 
   private origin$ = new BehaviorSubject<Origin | null>(null);
   originObservable$ = this.origin$.asObservable();
@@ -45,38 +54,65 @@ export class GraphService {
   private inputChangeEvent = new Subject<unknown>();
   onInputChangeEvent$ = this.inputChangeEvent.asObservable();
 
-  constructor() {
-    if (environment.vscode) {
-      this.onInputChangeEvent$.subscribe(() => {
-        if (g_editor && g_area) {
-          const graph = this.serializeGraph(g_editor, g_area, '');
-          this.vscode.postMessage({ type: 'saveGraph', requestId: -1, data: graph });
-        }
-      });
-    }
-  }
-
-  inputChangeSuject(): Subject<unknown> {
+  inputChangeSubject(): Subject<unknown> {
     return this.inputChangeEvent;
   }
 
-  async createNode(nodeId: string, userCreated: boolean, inputs?: { [key: string]: IInput }, outputs?: { [key: string]: IOutput }): Promise<BaseNode> {
-    const sanitizedNodeId = nodeId.replace(/[^a-zA-Z0-9-]/g, '-');
-    const node: BaseNode = await this.nf.createNode(`${sanitizedNodeId}-${generateRandomWord(3)}`, nodeId, this.inputChangeEvent, inputs, outputs);
+  async loadGraph(graph: string, readOnly: boolean, cb: LoadingGraphFunction): Promise<void> {
 
-    await g_editor!.addNode(node);
+    if (this.lastGraph === graph) {
+      return;
+    }
 
-    this.nodeCreated.next({ node: node, userCreated });
+    const nr = this.injector.get(Registry);
 
-    return node
-  }
+    let g = load(graph) as IGraph;
 
-  isReadOnly(): boolean {
-    return this.readOnly$.value;
-  }
+    await this.loadingLock.acquire("loadGraph", async () => {
 
-  setReadOnly(readOnly: boolean): void {
-    this.readOnly$.next(readOnly);
+      this.lastGraph = '';
+
+      // Assume this is a new document if graph is empty and prefill with a trigger node
+      if (!graph || Object.keys(graph).length === 0) {
+        await nr.loadBasicNodeTypeDefinitions(new Set(["gh-start@v1"]));
+
+        const nodeDef = (nr.getBasicNodeTypeDefinitionsSync() as Map<string, INodeTypeDefinitionBasic>).get("gh-start@v1");
+        if (!nodeDef) {
+          throw new Error("gh-start@v1 not found");
+        }
+
+        const startNodeId = "gh-start";
+
+        g = {
+          description: '',
+          entry: startNodeId,
+          nodes: [
+            {
+              id: startNodeId,
+              type: nodeDef!.id,
+              inputs: {},
+              position: { x: 100, y: 100 },
+              settings: undefined,
+            },
+          ],
+          connections: [],
+          executions: [],
+          registries: [],
+        };
+      }
+
+      const prom = nr.loadBasicNodeTypeDefinitions(this.getRegistries());
+
+      await cb(g);
+
+      this.graphRegistries$.next(new Set(g.registries));
+      this.graphEntry$.next(g.entry);
+      this.readOnly$.next(readOnly);
+
+      await Promise.all([prom]);
+
+      this.lastGraph = graph;
+    });
   }
 
   serializeGraph(editor: NodeEditor<Schemes>, area: AreaPlugin<Schemes, AreaExtra>, description: string): string {
@@ -87,7 +123,7 @@ export class GraphService {
     // Use injector to avoid circular dependency
     const gs = this.injector.get(GraphService);
 
-    const entry = gs.getEntry();
+    const entry = this.graphEntry$.value;
     if (!entry) {
       throw new Error('Entry not set');
     }
@@ -188,34 +224,31 @@ export class GraphService {
       nodes: nodes,
       registries: [...gs.getRegistries()],
       description,
-      view: {
-        transform: area.area.transform
-      },
     };
 
-    return dump(graph, {
+    const g = dump(graph, {
       noCompatMode: true,
     });
+
+    this.lastGraph = g;
+
+    return g;
   }
 
-  removeRegistry(registry: string): void {
-    const registries = this.graphRegistries$.value;
-    registries.delete(registry);
-    this.graphRegistries$.next(registries);
-  }
+  async createNode(nodeTypeId: string, nodeId: string | null, userCreated: boolean, inputs?: { [key: string]: IInput }, outputs?: { [key: string]: IOutput }): Promise<BaseNode> {
+    const sanitizedNodeId = nodeTypeId.replace(/[^a-zA-Z0-9-]/g, '-');
 
-  addRegistry(registry: RegistryUriInfo): void {
-    // Caller has to make sure that all fields of the type uri are filled
-    if (registry.registry === ""
-      || registry.owner === ""
-      || registry.regname === ""
-    ) {
-      throw new Error("Invalid registry uri");
+    if (!nodeId) {
+      nodeId = `${sanitizedNodeId}-${generateRandomWord(3)}`
     }
 
-    const registries = this.graphRegistries$.value;
-    registries.add(uriToString(registry));
-    this.graphRegistries$.next(registries);
+    const node: BaseNode = await this.nf.createNode(nodeId, nodeTypeId, this.inputChangeEvent, inputs, outputs);
+
+    await g_editor!.addNode(node);
+
+    this.nodeCreated.next({ node: node, userCreated });
+
+    return node
   }
 
   async deleteNode(nodeId: string): Promise<void> {
@@ -250,6 +283,34 @@ export class GraphService {
     await Promise.all(promisesNodes);
   }
 
+  isLoading(): boolean {
+    return this.loadingLock.isBusy("loadGraph");
+  }
+
+  isReadOnly(): boolean {
+    return this.readOnly$.value;
+  }
+
+  removeRegistry(registry: string): void {
+    const registries = this.graphRegistries$.value;
+    registries.delete(registry);
+    this.graphRegistries$.next(registries);
+  }
+
+  addRegistry(registry: RegistryUriInfo): void {
+    // Caller has to make sure that all fields of the type uri are filled
+    if (registry.registry === ""
+      || registry.owner === ""
+      || registry.regname === ""
+    ) {
+      throw new Error("Invalid registry uri");
+    }
+
+    const registries = this.graphRegistries$.value;
+    registries.add(uriToString(registry));
+    this.graphRegistries$.next(registries);
+  }
+
   getRegistries(): Set<string> {
     return this.graphRegistries$.value;
   }
@@ -264,22 +325,6 @@ export class GraphService {
 
   setOrigin(o: Origin): void {
     this.origin$.next(o);
-  }
-
-  setEntry(entry: string): void {
-    this.graphEntry$.next(entry);
-  }
-
-  setRegistries(registries: Set<string>): void {
-    this.graphRegistries$.next(registries);
-  }
-
-  getEntryObservable(): BehaviorSubject<string | null> {
-    return this.graphEntry$;
-  }
-
-  getEntry(): string | null {
-    return this.graphEntry$.value;
   }
 }
 
