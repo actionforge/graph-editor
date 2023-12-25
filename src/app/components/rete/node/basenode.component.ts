@@ -108,7 +108,7 @@ export class BaseNodeComponent implements OnChanges {
   async onAppendInputValue(event: MouseEvent, input: BaseInput): Promise<void> {
     event.stopPropagation();
 
-    await this.data.appendInputValue(input, this.gs.inputChangeSuject());
+    await this.data.appendInputValue(input, this.gs.inputChangeSubject());
 
     const control = input.control as BaseControl<BaseControlType> | null;
     if (control) {

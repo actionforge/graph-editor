@@ -1,7 +1,7 @@
 import { Injectable, Injector, inject } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { BaseNode } from '../helper/rete/basenode';
-import { dump } from 'js-yaml';
+import { dump, load } from 'js-yaml';
 import { NodeFactory } from './nodefactory.service';
 import { generateRandomWord } from '../helper/wordlist';
 import { IConnection, IExecution, IGraph, IInput, IOutput, INode } from '../schemas/graph';
@@ -34,6 +34,8 @@ export class GraphService {
 
   loadingLock = new AsyncLock();
 
+  lastGraph = '';
+
   private loading$ = new BehaviorSubject<boolean>(false);
   loadingObservable$ = this.loading$.asObservable();
 
@@ -55,61 +57,19 @@ export class GraphService {
   private inputChangeEvent = new Subject<unknown>();
   onInputChangeEvent$ = this.inputChangeEvent.asObservable();
 
-  inputChangeSuject(): Subject<unknown> {
+  inputChangeSubject(): Subject<unknown> {
     return this.inputChangeEvent;
   }
 
-  async createNode(nodeTypeId: string, nodeId: string | null, userCreated: boolean, inputs?: { [key: string]: IInput }, outputs?: { [key: string]: IOutput }): Promise<BaseNode> {
-    const sanitizedNodeId = nodeTypeId.replace(/[^a-zA-Z0-9-]/g, '-');
+  async loadGraph(graph: string, readOnly: boolean, cb: LoadingGraphFunction): Promise<void> {
 
-    if (!nodeId) {
-      nodeId = `${sanitizedNodeId}-${generateRandomWord(3)}`
+    if (this.lastGraph === graph) {
+      return;
     }
-
-    const node: BaseNode = await this.nf.createNode(nodeId, nodeTypeId, this.inputChangeEvent, inputs, outputs);
-
-    await g_editor!.addNode(node);
-
-    this.nodeCreated.next({ node: node, userCreated });
-
-    return node
-  }
-
-  async deleteNode(nodeId: string): Promise<void> {
-    // First remove all connections of the node
-    // and identify their associcated nodes as
-    // they might need to be updated as well,
-    // since a connection got taken away from them.
-    const promisesConns = [];
-
-    const associcatedNodes = new Set<string>();
-
-    for (const conn of g_editor!.getConnections()) {
-      if (conn.source === nodeId || conn.target === nodeId) {
-        promisesConns.push(g_editor!.removeConnection(conn.id));
-        if (conn.source === nodeId) {
-          associcatedNodes.add(conn.target);
-        } else {
-          associcatedNodes.add(conn.source);
-        }
-      }
-    }
-
-    await g_editor!.removeNode(nodeId);
-    await Promise.all(promisesConns);
-
-    const promisesNodes = [];
-
-    for (const nodeId of associcatedNodes) {
-      promisesNodes.push(g_area!.update("node", nodeId));
-    }
-
-    await Promise.all(promisesNodes);
-  }
-
-  async loadGraph(graph: IGraph | null, readOnly: boolean, cb: LoadingGraphFunction): Promise<void> {
 
     const nr = this.injector.get(Registry);
+
+    let g = load(graph) as IGraph;
 
     try {
       this.loading$.next(true);
@@ -126,7 +86,7 @@ export class GraphService {
 
           const startNodeId = "gh-start";
 
-          graph = {
+          g = {
             description: '',
             entry: startNodeId,
             nodes: [
@@ -146,30 +106,21 @@ export class GraphService {
 
         const prom = nr.loadBasicNodeTypeDefinitions(this.getRegistries());
 
-        await cb(graph);
+        await cb(g);
 
-        this.setRegistries(new Set(graph.registries));
-        this.setEntry(graph.entry);
-        this.setReadOnly(readOnly);
+        this.graphRegistries$.next(new Set(g.registries));
+        this.graphEntry$.next(g.entry);
+        this.readOnly$.next(readOnly);
 
         await Promise.all([prom]);
-      });
 
+        this.lastGraph = graph;
+      });
+    } catch (e) {
+      this.lastGraph = '';
     } finally {
       this.loading$.next(false);
     }
-  }
-
-  isLoading(): boolean {
-    return this.loading$.value;
-  }
-
-  isReadOnly(): boolean {
-    return this.readOnly$.value;
-  }
-
-  setReadOnly(readOnly: boolean): void {
-    this.readOnly$.next(readOnly);
   }
 
   serializeGraph(editor: NodeEditor<Schemes>, area: AreaPlugin<Schemes, AreaExtra>, description: string): string {
@@ -180,7 +131,7 @@ export class GraphService {
     // Use injector to avoid circular dependency
     const gs = this.injector.get(GraphService);
 
-    const entry = gs.getEntry();
+    const entry = this.graphEntry$.value;
     if (!entry) {
       throw new Error('Entry not set');
     }
@@ -283,9 +234,69 @@ export class GraphService {
       description,
     };
 
-    return dump(graph, {
+    const g = dump(graph, {
       noCompatMode: true,
     });
+
+    this.lastGraph = g;
+
+    return g;
+  }
+
+  async createNode(nodeTypeId: string, nodeId: string | null, userCreated: boolean, inputs?: { [key: string]: IInput }, outputs?: { [key: string]: IOutput }): Promise<BaseNode> {
+    const sanitizedNodeId = nodeTypeId.replace(/[^a-zA-Z0-9-]/g, '-');
+
+    if (!nodeId) {
+      nodeId = `${sanitizedNodeId}-${generateRandomWord(3)}`
+    }
+
+    const node: BaseNode = await this.nf.createNode(nodeId, nodeTypeId, this.inputChangeEvent, inputs, outputs);
+
+    await g_editor!.addNode(node);
+
+    this.nodeCreated.next({ node: node, userCreated });
+
+    return node
+  }
+
+  async deleteNode(nodeId: string): Promise<void> {
+    // First remove all connections of the node
+    // and identify their associcated nodes as
+    // they might need to be updated as well,
+    // since a connection got taken away from them.
+    const promisesConns = [];
+
+    const associcatedNodes = new Set<string>();
+
+    for (const conn of g_editor!.getConnections()) {
+      if (conn.source === nodeId || conn.target === nodeId) {
+        promisesConns.push(g_editor!.removeConnection(conn.id));
+        if (conn.source === nodeId) {
+          associcatedNodes.add(conn.target);
+        } else {
+          associcatedNodes.add(conn.source);
+        }
+      }
+    }
+
+    await g_editor!.removeNode(nodeId);
+    await Promise.all(promisesConns);
+
+    const promisesNodes = [];
+
+    for (const nodeId of associcatedNodes) {
+      promisesNodes.push(g_area!.update("node", nodeId));
+    }
+
+    await Promise.all(promisesNodes);
+  }
+
+  isLoading(): boolean {
+    return this.loading$.value;
+  }
+
+  isReadOnly(): boolean {
+    return this.readOnly$.value;
   }
 
   removeRegistry(registry: string): void {
@@ -322,22 +333,6 @@ export class GraphService {
 
   setOrigin(o: Origin): void {
     this.origin$.next(o);
-  }
-
-  setEntry(entry: string): void {
-    this.graphEntry$.next(entry);
-  }
-
-  setRegistries(registries: Set<string>): void {
-    this.graphRegistries$.next(registries);
-  }
-
-  getEntryObservable(): BehaviorSubject<string | null> {
-    return this.graphEntry$;
-  }
-
-  getEntry(): string | null {
-    return this.graphEntry$.value;
   }
 }
 
