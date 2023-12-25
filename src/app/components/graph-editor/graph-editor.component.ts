@@ -285,10 +285,6 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     }
 
     await Promise.all(createConnections);
-
-    for (const node of nodes.values()) {
-      void g_area!.update("node", node.id);
-    }
   }
 
   async ngAfterViewInit() {
@@ -355,6 +351,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
       this.gs.onInputChangeEvent$.subscribe(() => {
         if (g_editor && g_area) {
           const graph = this.gs.serializeGraph(g_editor, g_area, '');
+          console.log("saveGraph onInputChangeEvent")
           this.vscode.postMessage({ type: 'saveGraph', requestId: -1, data: graph });
         }
       });
@@ -365,6 +362,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
           case "nodedragged": {
             if (!this.gs.isLoading()) {
               const graph = this.gs.serializeGraph(editor, area!, '');
+              console.log("saveGraph nodedragged");
               void this.vscode.postMessage({ type: 'saveGraph', requestId: -1, data: graph });
             }
             break;
@@ -394,6 +392,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
             // send the 'saveGraph' message outside of the loading operation.
             if (!this.gs.isLoading()) {
               const graph = this.gs.serializeGraph(editor, area!, '');
+              console.log("saveGraph " + type);
               void this.vscode.postMessage({ type: 'saveGraph', requestId: -1, data: graph });
             }
             break;
