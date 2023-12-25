@@ -208,7 +208,7 @@ export class BaseNode extends ClassicPreset.Node {
       const inputCount = getHighestSubPortIndex(input.socket.name, [...this.getInputValues().keys()]);
       let inputHint: string | undefined;
       if (input.def.hint) {
-        inputHint = input.def.hint.replaceAll("{i}", `${inputCount + 1}`);
+        inputHint = input.def.hint.replace(/{i}/g, `${inputCount + 1}`);
       }
 
       const newInputId = `${input.socket.name}[${inputCount + 1}]`;
