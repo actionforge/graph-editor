@@ -36,9 +36,6 @@ export class GraphService {
 
   lastGraph = '';
 
-  private loading$ = new BehaviorSubject<boolean>(false);
-  loadingObservable$ = this.loading$.asObservable();
-
   private origin$ = new BehaviorSubject<Origin | null>(null);
   originObservable$ = this.origin$.asObservable();
 
@@ -71,56 +68,51 @@ export class GraphService {
 
     let g = load(graph) as IGraph;
 
-    try {
-      this.loading$.next(true);
+    await this.loadingLock.acquire("loadGraph", async () => {
 
-      await this.loadingLock.acquire("loadGraph", async () => {
-        // Assume this is a new document if graph is empty and prefill with a trigger node
-        if (!graph || Object.keys(graph).length === 0) {
-          await nr.loadBasicNodeTypeDefinitions(new Set(["gh-start@v1"]));
+      this.lastGraph = '';
 
-          const nodeDef = (nr.getBasicNodeTypeDefinitionsSync() as Map<string, INodeTypeDefinitionBasic>).get("gh-start@v1");
-          if (!nodeDef) {
-            throw new Error("gh-start@v1 not found");
-          }
+      // Assume this is a new document if graph is empty and prefill with a trigger node
+      if (!graph || Object.keys(graph).length === 0) {
+        await nr.loadBasicNodeTypeDefinitions(new Set(["gh-start@v1"]));
 
-          const startNodeId = "gh-start";
-
-          g = {
-            description: '',
-            entry: startNodeId,
-            nodes: [
-              {
-                id: startNodeId,
-                type: nodeDef!.id,
-                inputs: {},
-                position: { x: 100, y: 100 },
-                settings: undefined,
-              },
-            ],
-            connections: [],
-            executions: [],
-            registries: [],
-          };
+        const nodeDef = (nr.getBasicNodeTypeDefinitionsSync() as Map<string, INodeTypeDefinitionBasic>).get("gh-start@v1");
+        if (!nodeDef) {
+          throw new Error("gh-start@v1 not found");
         }
 
-        const prom = nr.loadBasicNodeTypeDefinitions(this.getRegistries());
+        const startNodeId = "gh-start";
 
-        await cb(g);
+        g = {
+          description: '',
+          entry: startNodeId,
+          nodes: [
+            {
+              id: startNodeId,
+              type: nodeDef!.id,
+              inputs: {},
+              position: { x: 100, y: 100 },
+              settings: undefined,
+            },
+          ],
+          connections: [],
+          executions: [],
+          registries: [],
+        };
+      }
 
-        this.graphRegistries$.next(new Set(g.registries));
-        this.graphEntry$.next(g.entry);
-        this.readOnly$.next(readOnly);
+      const prom = nr.loadBasicNodeTypeDefinitions(this.getRegistries());
 
-        await Promise.all([prom]);
+      await cb(g);
 
-        this.lastGraph = graph;
-      });
-    } catch (e) {
-      this.lastGraph = '';
-    } finally {
-      this.loading$.next(false);
-    }
+      this.graphRegistries$.next(new Set(g.registries));
+      this.graphEntry$.next(g.entry);
+      this.readOnly$.next(readOnly);
+
+      await Promise.all([prom]);
+
+      this.lastGraph = graph;
+    });
   }
 
   serializeGraph(editor: NodeEditor<Schemes>, area: AreaPlugin<Schemes, AreaExtra>, description: string): string {
@@ -292,7 +284,7 @@ export class GraphService {
   }
 
   isLoading(): boolean {
-    return this.loading$.value;
+    return this.loadingLock.isBusy("loadGraph");
   }
 
   isReadOnly(): boolean {
