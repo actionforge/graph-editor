@@ -10,7 +10,6 @@ import { AreaExtra, Schemes, g_area, g_editor } from '../helper/rete/editor';
 import { AreaPlugin, NodeView } from 'rete-area-plugin';
 import { RegistryUriInfo, uriToString } from '../helper/utils';
 import { VsCodeService } from './vscode.service';
-import { environment } from 'src/environments/environment';
 import { Registry } from './registry.service';
 import { INodeTypeDefinitionBasic } from '../helper/rete/interfaces/nodes';
 
@@ -55,17 +54,6 @@ export class GraphService {
 
   private inputChangeEvent = new Subject<unknown>();
   onInputChangeEvent$ = this.inputChangeEvent.asObservable();
-
-  constructor() {
-    if (environment.vscode) {
-      this.onInputChangeEvent$.subscribe(() => {
-        if (g_editor && g_area) {
-          const graph = this.serializeGraph(g_editor, g_area, '');
-          this.vscode.postMessage({ type: 'saveGraph', requestId: -1, data: graph });
-        }
-      });
-    }
-  }
 
   inputChangeSuject(): Subject<unknown> {
     return this.inputChangeEvent;

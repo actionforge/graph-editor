@@ -53,6 +53,8 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('rete') container!: ElementRef<HTMLElement>;
 
+  lastGraph = '';
+
   nodeButtonSeries = [
     [
       {
@@ -159,7 +161,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   ]
 
   messageSubscription = this.vscode.messageObservable$.subscribe((e: VsCodeMessage) => {
-    const { type, data, requestId } = e.data;
+    const { type, data } = e.data;
     switch (type) {
       case 'setFileData': {
         const d = data as {
@@ -167,6 +169,12 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
           uri: string;
           transform: Transform
         }
+
+        if (this.lastGraph === d.data) {
+          return;
+        }
+
+        this.lastGraph = d.data;
 
         const graph = load(d.data) as IGraph | null;
         void this.openGraph(d.uri, graph, d.transform)
@@ -353,12 +361,21 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
     if (environment.vscode) {
 
+      this.gs.onInputChangeEvent$.subscribe(() => {
+        if (g_editor && g_area) {
+          const graph = this.gs.serializeGraph(g_editor, g_area, '');
+          this.lastGraph = graph;
+          this.vscode.postMessage({ type: 'saveGraph', requestId: -1, data: graph });
+        }
+      });
+
       area.addPipe((context: Root<Schemes> | AreaExtra | Area2D<Schemes>) => {
         const { type } = context as { type: string };
         switch (type) {
           case "nodedragged": {
             if (!this.gs.isLoading()) {
               const graph = this.gs.serializeGraph(editor, area!, '');
+              this.lastGraph = graph;
               void this.vscode.postMessage({ type: 'saveGraph', requestId: -1, data: graph });
             }
             break;
