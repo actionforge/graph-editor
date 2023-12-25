@@ -202,6 +202,14 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     await this.gs.loadGraph(graph, environment.web || uri.startsWith("git:"), async (g: IGraph) => {
       await this.loadGraphToEditor(g, transform);
     });
+
+    const promises = [];
+
+    for (const node of g_editor!.getNodes()) {
+      promises.push(g_area!.update("node", node.id));
+    }
+
+    await Promise.all(promises);
   }
 
   ngOnDestroy(): void {
