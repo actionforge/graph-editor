@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnChanges, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { BaseControl, BaseControlType } from 'src/app/helper/rete/basecontrol';
-import { GraphService } from 'src/app/services/graph.service';
+import { GraphService, Writable as Permission } from 'src/app/services/graph.service';
 
 @Component({
   selector: 'app-basecontrol',
@@ -21,8 +21,8 @@ export class BaseControlComponent implements OnChanges {
     this.cdr.detach();
   }
 
-  isReadOnly(): boolean {
-    return this.gs.isReadOnly();
+  getPermission(): Permission {
+    return this.gs.getPermission();
   }
 
   isEmpty(): boolean {

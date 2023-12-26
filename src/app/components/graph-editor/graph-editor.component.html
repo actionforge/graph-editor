@@ -1,7 +1,7 @@
 <!-- Flex box to fill the remaining vertical space -->
 <div class="flex flex-row h-full">
 
-   <div *ngIf="(isReadOnly() | async) === true"
+   <div *ngIf="(getPermission() | async) === Writable.ReadOnly"
       class="absolute flex items-center justify-center w-40 h-8 right-0 dark:bg-gray-800 transform rotate-45 translate-y-6 translate-x-12">
       Read only
    </div>
@@ -14,7 +14,7 @@
    </div>
 
    <!-- Node Toolbar-->
-   <div class="relative" *ngIf="(isReadOnly() | async) === false">
+   <div class="relative" *ngIf="(getPermission() | async) === Writable.Writable">
       <div
          class="absolute z-[500] left-4 top-4 flex flex-col text-gray-700 dark:text-white fill-gray-700 dark:fill-white">
 
@@ -38,7 +38,7 @@
    </div>
 
    <!-- Sidebar -->
-   <ng-container *ngIf="(isReadOnly() | async) === false">
+   <ng-container *ngIf="(getPermission() | async) === Writable.Writable">
       <app-sidebar></app-sidebar>
    </ng-container>
 

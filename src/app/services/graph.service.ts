@@ -24,6 +24,12 @@ export interface Origin {
 
 export type LoadingGraphFunction = (g: IGraph) => Promise<void>;
 
+export enum Writable {
+  Unknown,
+  ReadOnly,
+  Writable,
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -42,8 +48,8 @@ export class GraphService {
   private graphEntry$ = new BehaviorSubject<string | null>(null);
   graphEntryObservable$ = this.graphEntry$.asObservable();
 
-  private readOnly$ = new BehaviorSubject<boolean>(false);
-  readOnlyObservable$ = this.readOnly$.asObservable();
+  private permission$ = new BehaviorSubject<Writable>(Writable.Unknown);
+  permissionObservable$ = this.permission$.asObservable();
 
   private graphRegistries$ = new BehaviorSubject(new Set<string>());
   graphRegistriesObservable$ = this.graphRegistries$.asObservable();
@@ -58,7 +64,7 @@ export class GraphService {
     return this.inputChangeEvent;
   }
 
-  async loadGraph(graph: string, readOnly: boolean, cb: LoadingGraphFunction): Promise<void> {
+  async loadGraph(graph: string, writable: boolean, cb: LoadingGraphFunction): Promise<void> {
 
     if (this.lastGraph === graph) {
       return;
@@ -70,6 +76,7 @@ export class GraphService {
 
     await this.loadingLock.acquire("loadGraph", async () => {
 
+      this.permission$.next(Writable.Unknown);
       this.lastGraph = '';
 
       // Assume this is a new document if graph is empty and prefill with a trigger node
@@ -105,13 +112,12 @@ export class GraphService {
 
       await cb(g);
 
-      this.graphRegistries$.next(new Set(g.registries));
-      this.graphEntry$.next(g.entry);
-      this.readOnly$.next(readOnly);
-
       await Promise.all([prom]);
 
       this.lastGraph = graph;
+      this.graphRegistries$.next(new Set(g.registries));
+      this.graphEntry$.next(g.entry);
+      this.permission$.next(writable ? Writable.Writable : Writable.ReadOnly);
     });
   }
 
@@ -287,8 +293,8 @@ export class GraphService {
     return this.loadingLock.isBusy("loadGraph");
   }
 
-  isReadOnly(): boolean {
-    return this.readOnly$.value;
+  getPermission(): Writable {
+    return this.permission$.value;
   }
 
   removeRegistry(registry: string): void {

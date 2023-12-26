@@ -6,7 +6,7 @@ import { BaseNode } from 'src/app/helper/rete/basenode';
 import { BaseSocket } from 'src/app/helper/rete/basesocket';
 import { Schemes, g_area, g_arrange, createEditor, g_editor, readonly, AreaExtra } from 'src/app/helper/rete/editor';
 import { IGraph, INode } from 'src/app/schemas/graph';
-import { GraphService, Origin } from 'src/app/services/graph.service';
+import { GraphService, Origin, Writable } from 'src/app/services/graph.service';
 import { NodeFactory } from 'src/app/services/nodefactory.service';
 import { Registry } from 'src/app/services/registry.service';
 import { octKey, octTerminal } from '@ng-icons/octicons';
@@ -52,6 +52,8 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   cdr = inject(ChangeDetectorRef);
 
   @ViewChild('rete') container!: ElementRef<HTMLElement>;
+
+  Writable = Writable;
 
   nodeButtonSeries = [
     [
@@ -178,8 +180,8 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     }
   });
 
-  isReadOnly(): Observable<boolean> {
-    return this.gs.readOnlyObservable$;
+  getPermission(): Observable<Writable> {
+    return this.gs.permissionObservable$;
   }
 
   isVsCode(): boolean {
@@ -199,7 +201,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   async openGraph(uri: string, graph: string, transform: Transform | null): Promise<void> {
-    await this.gs.loadGraph(graph, environment.web || uri.startsWith("git:"), async (g: IGraph) => {
+    await this.gs.loadGraph(graph, environment.vscode && !uri.startsWith("git:"), async (g: IGraph) => {
       await this.loadGraphToEditor(g, transform);
     });
 
