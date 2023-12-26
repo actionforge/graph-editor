@@ -1,11 +1,6 @@
 <!-- Flex box to fill the remaining vertical space -->
 <div class="flex flex-row h-full">
 
-   <div *ngIf="(getPermission() | async) === Permission.ReadOnly"
-      class="absolute flex items-center justify-center w-40 h-8 right-0 dark:bg-gray-800 transform rotate-45 translate-y-6 translate-x-12">
-      Read only
-   </div>
-
    <div class="relative" *ngIf="isWeb()">
       <div *ngIf="(getOrigin() | async) as o"
          class="absolute z-[500] text-xl left-4 top-4 flex flex-col fill-gray-700 dark:fill-white whitespace-nowrap">
@@ -35,6 +30,11 @@
    <!-- Graph Canvas -->
    <div class="cid-rete-background">
       <div class="cid-rete" #rete [class.readonly]="(getPermission() | async) === Permission.ReadOnly"> </div>
+   </div>
+
+   <div *ngIf="(getPermission() | async) === Permission.ReadOnly"
+      class="absolute flex items-center justify-center w-40 h-8 right-0 dark:bg-gray-800 transform rotate-45 translate-y-6 translate-x-12">
+      Read only
    </div>
 
    <!-- Sidebar -->
