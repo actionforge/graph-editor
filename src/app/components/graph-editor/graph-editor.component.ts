@@ -6,7 +6,7 @@ import { BaseNode } from 'src/app/helper/rete/basenode';
 import { BaseSocket } from 'src/app/helper/rete/basesocket';
 import { Schemes, g_area, g_arrange, createEditor, g_editor, readonly, AreaExtra } from 'src/app/helper/rete/editor';
 import { IGraph, INode } from 'src/app/schemas/graph';
-import { GraphService, Origin, Writable } from 'src/app/services/graph.service';
+import { GraphService, Origin, Permission } from 'src/app/services/graph.service';
 import { NodeFactory } from 'src/app/services/nodefactory.service';
 import { Registry } from 'src/app/services/registry.service';
 import { octKey, octTerminal } from '@ng-icons/octicons';
@@ -53,7 +53,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('rete') container!: ElementRef<HTMLElement>;
 
-  Writable = Writable;
+  Permission = Permission;
 
   nodeButtonSeries = [
     [
@@ -180,7 +180,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     }
   });
 
-  getPermission(): Observable<Writable> {
+  getPermission(): Observable<Permission> {
     return this.gs.permissionObservable$;
   }
 

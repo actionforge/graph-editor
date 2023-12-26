@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnChanges, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { BaseControl, BaseControlType } from 'src/app/helper/rete/basecontrol';
-import { GraphService, Writable as Permission } from 'src/app/services/graph.service';
+import { GraphService, Permission } from 'src/app/services/graph.service';
 
 @Component({
   selector: 'app-basecontrol',

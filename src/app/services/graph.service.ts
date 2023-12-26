@@ -24,7 +24,7 @@ export interface Origin {
 
 export type LoadingGraphFunction = (g: IGraph) => Promise<void>;
 
-export enum Writable {
+export enum Permission {
   Unknown,
   ReadOnly,
   Writable,
@@ -48,7 +48,7 @@ export class GraphService {
   private graphEntry$ = new BehaviorSubject<string | null>(null);
   graphEntryObservable$ = this.graphEntry$.asObservable();
 
-  private permission$ = new BehaviorSubject<Writable>(Writable.Unknown);
+  private permission$ = new BehaviorSubject<Permission>(Permission.Unknown);
   permissionObservable$ = this.permission$.asObservable();
 
   private graphRegistries$ = new BehaviorSubject(new Set<string>());
@@ -76,7 +76,7 @@ export class GraphService {
 
     await this.loadingLock.acquire("loadGraph", async () => {
 
-      this.permission$.next(Writable.Unknown);
+      this.permission$.next(Permission.Unknown);
       this.lastGraph = '';
 
       // Assume this is a new document if graph is empty and prefill with a trigger node
@@ -117,7 +117,7 @@ export class GraphService {
       this.lastGraph = graph;
       this.graphRegistries$.next(new Set(g.registries));
       this.graphEntry$.next(g.entry);
-      this.permission$.next(writable ? Writable.Writable : Writable.ReadOnly);
+      this.permission$.next(writable ? Permission.Writable : Permission.ReadOnly);
     });
   }
 
@@ -293,7 +293,7 @@ export class GraphService {
     return this.loadingLock.isBusy("loadGraph");
   }
 
-  getPermission(): Writable {
+  getPermission(): Permission {
     return this.permission$.value;
   }
 
