@@ -1,4 +1,4 @@
-<div *ngIf="!isReadOnly()" [class.opacity-100]="mouseover" class="flex items-center pointer-events-none justify-between gap-x-2 absolute z-[100] px-2 -top-8 h-8 w-full text-gray-700 dark:text-gray-300 
+<div *ngIf="getPermission()" [class.opacity-100]="mouseover" class="flex items-center pointer-events-none justify-between gap-x-2 absolute z-[100] px-2 -top-8 h-8 w-full text-gray-700 dark:text-gray-300 
   opacity-0 transition duration-500">
   <!-- Fold Button-->
   <ng-icon [name]="getFoldIcon()" size="18" [matTooltip]="getFoldTooltip()"
@@ -40,7 +40,7 @@
 
 <!-- Node Body -->
 <div class="cid-body w-full flex flex-col bg-gray-200 dark:bg-slate-700 rounded-b-lg"
-  [class.pointer-events-none]="isReadOnly()" [style.background]="getBodyBackground() | safe:'style'"
+  [class.pointer-events-none]="!getPermission()" [style.background]="getBodyBackground() | safe:'style'"
   [class.rounded-t-lg]="isCompact()">
 
   <div [ngClass]="isCompact() ? 'flex flex-row justify-center items-center' : 'flex flex-col'">

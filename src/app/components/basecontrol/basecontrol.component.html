@@ -41,12 +41,12 @@
 
   <ng-container *ngIf="!data.multiline; else stringMulti">
     <input type="text" class="w-full cid-input" (keydown)="onChange($event, index)" [class.cid-required]="isEmpty()"
-      autocomplete="off" [placeholder]="data.hint || ''" [value]="value" [readonly]="isReadOnly()" />
+      autocomplete="off" [placeholder]="data.hint || ''" [value]="value" [readonly]="!getPermission()" />
   </ng-container>
 
   <ng-template #stringMulti>
     <vscode-text-area #input class="w-full cid-input" (blur)="onChange($event)" [class.cid-required]="isEmpty()"
-      [readonly]="isReadOnly()" [value]="value"></vscode-text-area>
+      [readonly]="!getPermission()" [value]="value"></vscode-text-area>
   </ng-template>
 
 </ng-template>
@@ -57,7 +57,7 @@
 </ng-template>
 
 <ng-template #number let-value="value">
-  <input #input type="number" (keydown)="onChange($event)" [value]="value" [readonly]="isReadOnly()" [title]="value"
+  <input #input type="number" (keydown)="onChange($event)" [value]="value" [readonly]="!getPermission()" [title]="value"
     [step]="data.step " placeholder=" " />
 </ng-template>
 
