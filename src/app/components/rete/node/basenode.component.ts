@@ -13,7 +13,7 @@ import { BaseInput } from "src/app/helper/rete/baseinput";
 import { BaseNode } from "src/app/helper/rete/basenode";
 import { BaseOutput } from "src/app/helper/rete/baseoutput";
 import { g_area, g_editor } from "src/app/helper/rete/editor";
-import { GraphService, Writable } from "src/app/services/graph.service";
+import { GraphService, Permission } from "src/app/services/graph.service";
 import { NodeFactory } from "src/app/services/nodefactory.service";
 import { Registry } from "src/app/services/registry.service";
 
@@ -199,7 +199,7 @@ export class BaseNodeComponent implements OnChanges {
     return this.data.getDefinition().registry === "github.com";
   }
 
-  getPermission(): Writable {
+  getPermission(): Permission {
     return this.gs.getPermission();
   }
 
@@ -216,11 +216,11 @@ export class BaseNodeComponent implements OnChanges {
   }
 
   showOutputGroupButtons(port: BaseOutput): boolean {
-    return this.gs.getPermission() === Writable.Writable && Boolean(port.def.group);
+    return this.gs.getPermission() === Permission.Writable && Boolean(port.def.group);
   }
 
   showInputGroupButtons(port: BaseInput): boolean {
-    return this.gs.getPermission() === Writable.Writable && (Boolean(port.def.group) || (port.isArray() && Boolean(port.control && port.showControl)));
+    return this.gs.getPermission() === Permission.Writable && (Boolean(port.def.group) || (port.isArray() && Boolean(port.control && port.showControl)));
   }
 
   showInputControl(port: BaseInput): boolean {
