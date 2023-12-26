@@ -66,7 +66,7 @@ export class GraphService {
 
   async loadGraph(graph: string, writable: boolean, cb: LoadingGraphFunction): Promise<void> {
 
-    if (this.lastGraph === graph) {
+    if (graph !== "" && this.lastGraph === graph) {
       return;
     }
 
