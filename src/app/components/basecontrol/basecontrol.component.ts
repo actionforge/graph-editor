@@ -17,6 +17,8 @@ export class BaseControlComponent implements OnChanges {
   @Input() rendered!: () => void;
   @ViewChild('input') inputField: ElementRef<HTMLElement> | undefined;
 
+  Permission = Permission
+
   constructor() {
     this.cdr.detach();
   }

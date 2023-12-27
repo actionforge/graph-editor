@@ -64,6 +64,8 @@ export class BaseNodeComponent implements OnChanges {
   seed = 0;
   mouseover = false;
 
+  Permission = Permission
+
   constructor() {
     this.cdr.detach();
   }
