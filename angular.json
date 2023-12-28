@@ -24,7 +24,7 @@
               "@babel/runtime/regenerator",
               "dompurify",
               "elkjs",
-              "lodash.throttle"
+              "lodash.debounce"
             ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
