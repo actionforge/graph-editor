@@ -366,11 +366,19 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
     if (environment.vscode) {
 
-      this.gs.onInputChangeEvent$.subscribe(() => {
+      const debounceSaveGraph = debounce(() => {
         if (g_editor && g_area) {
           const graph = this.gs.serializeGraph(g_editor, g_area, '');
           this.vscode.postMessage({ type: 'saveGraph', data: graph });
         }
+      }, 500, {
+        leading: true, // with no delay, send the graph to vscode
+        trailing: true, // don't discard the last input change
+        maxWait: 500, // ensure the graph is saved after max 1s
+      });
+
+      this.gs.onInputChangeEvent$.subscribe(() => {
+        debounceSaveGraph();
       });
 
       area.addPipe((context: Root<Schemes> | AreaExtra | Area2D<Schemes>) => {
