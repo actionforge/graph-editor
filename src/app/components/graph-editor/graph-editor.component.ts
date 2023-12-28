@@ -28,7 +28,7 @@ import { Area2D } from 'rete-area-plugin';
 import { Transform } from 'rete-area-plugin/_types/area';
 import { dump } from 'js-yaml';
 
-import throttle from 'lodash.throttle';
+import debounce from 'lodash.debounce';
 
 provideVSCodeDesignSystem().register(
   // vsCodeButton(),
@@ -55,7 +55,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('rete') container!: ElementRef<HTMLElement>;
 
-  throttleOpenGraph = throttle(this.openGraph, 1000, {
+  debounceOpenGraph = debounce(this.openGraph, 1000, {
     leading: true, // with no delay, open the graph
     trailing: true, // don't discard the last open call
   });
@@ -178,7 +178,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
         }
 
         try {
-          await this.throttleOpenGraph(d.uri, d.data, d.transform)
+          await this.debounceOpenGraph(d.uri, d.data, d.transform)
         } catch (error) {
           console.error(error);
           void this.ns.showNotification(NotificationType.Error, getErrorMessage(error));
