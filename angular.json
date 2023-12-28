@@ -21,10 +21,10 @@
               "zone.js"
             ],
             "allowedCommonJsDependencies": [
-              "highlight.js",
               "@babel/runtime/regenerator",
+              "dompurify",
               "elkjs",
-              "dompurify"
+              "lodash.debounce"
             ],
             "tsConfig": "tsconfig.app.json",
             "assets": [

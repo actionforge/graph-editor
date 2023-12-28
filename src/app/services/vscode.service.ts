@@ -45,10 +45,10 @@ export class VsCodeService {
         }
     }
 
-    postMessage(opts: { type: string, requestId: number, data: unknown }): void {
+    postMessage(opts: { type: string, data: unknown }): void {
         if (!this._vsCode) {
             throw new Error('vscode not found');
         }
-        this._vsCode.postMessage(opts);
+        this._vsCode.postMessage(opts)
     }
 }
