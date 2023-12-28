@@ -40,8 +40,8 @@
 
 <!-- Node Body -->
 <div class="cid-body w-full flex flex-col bg-gray-200 dark:bg-slate-700 rounded-b-lg"
-  [class.pointer-events-none]="!getPermission()" [style.background]="getBodyBackground() | safe:'style'"
-  [class.rounded-t-lg]="isCompact()">
+  [class.pointer-events-none]="getPermission() === Permission.ReadOnly"
+  [style.background]="getBodyBackground() | safe:'style'" [class.rounded-t-lg]="isCompact()">
 
   <div [ngClass]="isCompact() ? 'flex flex-row justify-center items-center' : 'flex flex-col'">
 

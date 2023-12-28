@@ -28,6 +28,8 @@ import { Area2D } from 'rete-area-plugin';
 import { Transform } from 'rete-area-plugin/_types/area';
 import { dump } from 'js-yaml';
 
+import debounce from 'lodash.debounce';
+
 provideVSCodeDesignSystem().register(
   // vsCodeButton(),
   // TODO (Seb): I'm lazy, fix this
@@ -52,6 +54,8 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   cdr = inject(ChangeDetectorRef);
 
   @ViewChild('rete') container!: ElementRef<HTMLElement>;
+
+  debounceOpenGraph = debounce(this.openGraph, 1000);
 
   Permission = Permission;
 
@@ -160,7 +164,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     ]
   ]
 
-  messageSubscription = this.vscode.messageObservable$.subscribe((e: VsCodeMessage) => {
+  messageSubscription = this.vscode.messageObservable$.subscribe(async (e: VsCodeMessage) => {
     const { type, data } = e.data;
     switch (type) {
       case 'setFileData': {
@@ -170,11 +174,12 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
           transform: Transform
         }
 
-        void this.openGraph(d.uri, d.data, d.transform)
-          .catch((error) => {
-            console.error(error);
-            void this.ns.showNotification(NotificationType.Error, getErrorMessage(error));
-          })
+        try {
+          await this.debounceOpenGraph(d.uri, d.data, d.transform)
+        } catch (error) {
+          console.error(error);
+          void this.ns.showNotification(NotificationType.Error, getErrorMessage(error));
+        }
         break;
       }
     }
@@ -361,7 +366,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
       this.gs.onInputChangeEvent$.subscribe(() => {
         if (g_editor && g_area) {
           const graph = this.gs.serializeGraph(g_editor, g_area, '');
-          this.vscode.postMessage({ type: 'saveGraph', requestId: -1, data: graph });
+          this.vscode.postMessage({ type: 'saveGraph', data: graph });
         }
       });
 
@@ -371,13 +376,13 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
           case "nodedragged": {
             if (!this.gs.isLoading()) {
               const graph = this.gs.serializeGraph(editor, area!, '');
-              void this.vscode.postMessage({ type: 'saveGraph', requestId: -1, data: graph });
+              void this.vscode.postMessage({ type: 'saveGraph', data: graph });
             }
             break;
           }
           case "pointerup": { // finish dragging
             if (!this.gs.isLoading()) {
-              void this.vscode.postMessage({ type: 'saveTransform', requestId: -1, data: area.area.transform });
+              void this.vscode.postMessage({ type: 'saveTransform', data: area.area.transform });
             }
             break;
           }
@@ -400,7 +405,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
             // send the 'saveGraph' message outside of the loading operation.
             if (!this.gs.isLoading()) {
               const graph = this.gs.serializeGraph(editor, area!, '');
-              void this.vscode.postMessage({ type: 'saveGraph', requestId: -1, data: graph });
+              void this.vscode.postMessage({ type: 'saveGraph', data: graph });
             }
             break;
           }

@@ -17,6 +17,8 @@ export class BaseControlComponent implements OnChanges {
   @Input() rendered!: () => void;
   @ViewChild('input') inputField: ElementRef<HTMLElement> | undefined;
 
+  Permission = Permission
+
   constructor() {
     this.cdr.detach();
   }
@@ -111,25 +113,21 @@ export class BaseControlComponent implements OnChanges {
       case BaseControlType.string: {
         let value = target.value;
         if (value === "" && this.data.required) {
-          value = `${this.data.default} `;
-          target.value = value;
+          value = `${this.data.default}`;
         }
 
-        if (value) {
-          this.data.setValue(value);
-        }
+        target.value = value as string;
+        this.data.setValue(value);
         break;
       }
       case BaseControlType.number: {
         let value = (e instanceof KeyboardEvent && e.key === 'Enter') || e instanceof FocusEvent ? target.value : oldValue;
         if (value === 0.0 && this.data.required && this.data.default) {
-          value = this.data.default;
+          value = `${this.data.default}`;
         }
 
         target.value = value as string;
-        if (value) {
-          this.data.setValue(+value);
-        }
+        this.data.setValue(+value);
         break;
       }
       case BaseControlType.bool: {
