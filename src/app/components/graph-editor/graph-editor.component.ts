@@ -55,7 +55,10 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('rete') container!: ElementRef<HTMLElement>;
 
-  throttleOpenGraph = throttle(this.openGraph, 1000, { leading: true, trailing: true });
+  throttleOpenGraph = throttle(this.openGraph, 1000, {
+    leading: true, // with no delay, open the graph
+    trailing: true, // don't discard the last open call
+  });
 
   Permission = Permission;
 
