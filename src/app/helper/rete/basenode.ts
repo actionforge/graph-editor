@@ -21,8 +21,12 @@ const portTypeToControlTypeMapping = new Map<string, BaseControlType>([
 
 export class BaseNode extends ClassicPreset.Node {
 
-  width = 64;
-  height = 64;
+  get width(): number {
+    return document.querySelector(`node-${this.id}`)?.clientWidth ?? 0;
+  }
+  get height(): number {
+    return document.querySelector(`node-${this.id}`)?.clientHeight ?? 0;
+  }
 
   // Different from ClassicPreset.Node.
   // Similar to github/sebastianrath/node-js-examples/fibnode@v4
@@ -88,14 +92,6 @@ export class BaseNode extends ClassicPreset.Node {
 
   getSettings(): ISettings {
     return this.settings;
-  }
-
-  setWidth(width: number): void {
-    this.width = width;
-  }
-
-  setHeight(height: number): void {
-    this.height = height;
   }
 
   setInputValue(portId: string, portValue: unknown): void {
