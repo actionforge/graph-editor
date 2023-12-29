@@ -7,15 +7,27 @@
       "node"
     ],
     "forceConsistentCasingInFileNames": true,
+    // strict
+    "alwaysStrict": true,
     "strict": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    // no
     "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitThis": true,
+    "noImplicitAny": true,
     "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
     "noFallthroughCasesInSwitch": true,
+    // use
+    "useUnknownInCatchVariables": true,
+    // allow
+    "allowSyntheticDefaultImports": true,
     "inlineSources": true,
     "inlineSourceMap": true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
@@ -30,13 +42,15 @@
     ],
   },
   "angularCompilerOptions": {
-    "enableI18nLegacyMessageIdFormat": false,
+    "strictTemplates": true,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
-    "strictTemplates": true
+    "enableI18nLegacyMessageIdFormat": false,
   },
   "exclude": [
     "node_modules",
-    ".eslintrc.json"
+    ".eslintrc.json",
+    "src/environments/environment.vscode.ts",
+    "src/environments/environment.web.ts"
   ],
 }

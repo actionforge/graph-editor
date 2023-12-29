@@ -24,8 +24,9 @@ import { featherSearch } from '@ng-icons/feather-icons';
 import { SocketData } from 'rete-connection-plugin';
 import { BaseInput } from 'src/app/helper/rete/baseinput';
 import { BaseOutput } from 'src/app/helper/rete/baseoutput';
-import { Area2D } from 'rete-area-plugin';
+import { Area2D, AreaExtensions } from 'rete-area-plugin';
 import { Transform } from 'rete-area-plugin/_types/area';
+
 import { dump } from 'js-yaml';
 
 import debounce from 'lodash.debounce';
@@ -170,15 +171,23 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   messageSubscription = this.vscode.messageObservable$.subscribe(async (e: VsCodeMessage) => {
     const { type, data } = e.data;
     switch (type) {
+      case 'arrangeNodes': {
+        await this.arrangeNodes();
+        break;
+      }
+      case 'fitToCanvas': {
+        await this.fitToCanvas();
+        break;
+      }
       case 'setFileData': {
         const d = data as {
           data: string;
           uri: string;
-          transform: Transform
+          transform: Transform | null
         }
 
         try {
-          await this.debounceOpenGraph(d.uri, d.data, d.transform)
+          await this.debounceOpenGraph(d.uri, d.data, d.transform);
         } catch (error) {
           console.error(error);
           void this.ns.showNotification(NotificationType.Error, getErrorMessage(error));
@@ -209,17 +218,27 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   async openGraph(uri: string, graph: string, transform: Transform | null): Promise<void> {
+    if (!g_editor) {
+      throw new Error('editor not initialized');
+    } else if (!g_area) {
+      throw new Error('area not initialized');
+    }
+
     await this.gs.loadGraph(graph, environment.vscode && !uri.startsWith("git:"), async (g: IGraph) => {
       await this.loadGraphToEditor(g, transform);
     });
 
     const promises = [];
 
-    for (const node of g_editor!.getNodes()) {
-      promises.push(g_area!.update("node", node.id));
+    for (const node of g_editor.getNodes()) {
+      promises.push(g_area.update("node", node.id));
     }
 
     await Promise.all(promises);
+
+    if (!transform) {
+      await this.fitToCanvas();
+    }
   }
 
   ngOnDestroy(): void {
@@ -445,10 +464,28 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
         provider: 'github', owner, repo, ref, path,
       });
       await this.openGraph(location.pathname, dump(graph), null);
+      await this.fitToCanvas();
     }
   }
 
   async arrangeNodes(): Promise<void> {
-    await g_arrange!.layout();
+    if (!g_arrange) {
+      throw new Error('arrange not initialized');
+    }
+    await g_arrange.layout();
+  }
+
+  async fitToCanvas(): Promise<void> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        if (!g_editor) {
+          throw new Error('editor not initialized');
+        } else if (!g_area) {
+          throw new Error('area not initialized');
+        }
+        void AreaExtensions.zoomAt(g_area, g_editor.getNodes(), { scale: 0.75 })
+          .then(resolve)
+      }, 0);
+    })
   }
 }

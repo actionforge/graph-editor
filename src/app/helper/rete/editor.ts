@@ -188,8 +188,6 @@ export async function createEditor(element: HTMLElement, injector: Injector): Pr
     return context;
   })
 
-  await g_arrange.layout();
-
   return {
     editor: g_editor,
     area: g_area,
