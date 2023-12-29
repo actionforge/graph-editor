@@ -188,9 +188,6 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
         try {
           await this.debounceOpenGraph(d.uri, d.data, d.transform);
-          if (!d.transform) {
-            await this.fitToCanvas();
-          }
         } catch (error) {
           console.error(error);
           void this.ns.showNotification(NotificationType.Error, getErrorMessage(error));
@@ -238,6 +235,10 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     }
 
     await Promise.all(promises);
+
+    if (!transform) {
+      await this.fitToCanvas();
+    }
   }
 
   ngOnDestroy(): void {
