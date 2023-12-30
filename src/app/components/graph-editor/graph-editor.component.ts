@@ -324,7 +324,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     await Promise.all(createConnections);
   }
 
-  async ngAfterViewInit() {
+  async ngAfterViewInit(): Promise<void> {
 
     const { editor, area, connection } = await createEditor(this.container.nativeElement, this.injector);
 

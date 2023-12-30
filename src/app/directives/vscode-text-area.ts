@@ -33,14 +33,14 @@ export class VscodeTextAreaValueAccessorDirective implements ControlValueAccesso
     }
 
     @HostListener('input', ['$event.target.value'])
-    onInput(value: unknown) {
+    onInput(value: unknown): void {
         if (this.onChange) {
             this.onChange(value);
         }
     }
 
     @HostListener('blur')
-    onBlur() {
+    onBlur(): void {
         if (this.onTouched) {
             this.onTouched();
         }

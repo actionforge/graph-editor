@@ -67,7 +67,7 @@ export class BaseControl<T extends BaseControlType | unknown, N =
         return this.opts.getValue();
     }
 
-    setValue(value?: N) {
+    setValue(value?: N): void {
         this.opts.setValue(value)
     }
 }

@@ -26,7 +26,7 @@ export class NotificationService {
 
   showNotification(type: NotificationType, message: string, opts?: {
     timeout?: number;
-  }) {
+  }): void {
     const notification: INotification = { type, message };
 
     // Remove notifications after n-seconds
@@ -39,7 +39,7 @@ export class NotificationService {
     this.notificationSubject.next([...this.notificationQueue]); // Emit a new copy of the queue
   }
 
-  clearNotification(notification: INotification) {
+  clearNotification(notification: INotification): void {
     const index = this.notificationQueue.indexOf(notification);
     if (index !== -1) {
       this.notificationQueue.splice(index, 1);
