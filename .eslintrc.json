@@ -2,11 +2,12 @@
   "root": true,
   "parser": "@typescript-eslint/parser",
   "ignorePatterns": [
-    "projects/**/*"
+    "src/environments/environment.dev.ts",
+    "src/environments/environment.web.ts"
   ],
   "parserOptions": {
     "project": [
-      "tsconfig.(app|spec).json"
+      "tsconfig.(app|spec|vscode).json"
     ]
   },
   "overrides": [

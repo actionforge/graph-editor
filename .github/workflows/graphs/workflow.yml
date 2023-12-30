@@ -1,0 +1,58 @@
+entry: gh-start
+executions:
+  - src:
+      node: gh-start
+      port: exec-on-push
+    dst:
+      node: github-com-actions-checkout-lemon-pink-apple
+      port: exec
+  - src:
+      node: github-com-actions-checkout-lemon-pink-apple
+      port: exec
+    dst:
+      node: github-com-actions-setup-node-blue-panda-gray
+      port: exec
+  - src:
+      node: github-com-actions-setup-node-blue-panda-gray
+      port: exec
+    dst:
+      node: run-v1-parrot-yellow-parrot
+      port: exec
+connections: []
+nodes:
+  - id: gh-start
+    type: gh-start@v1
+    position:
+      x: 100
+      y: 100
+    settings:
+      folded: false
+  - id: run-v1-parrot-yellow-parrot
+    type: run@v1
+    position:
+      x: 1750
+      y: 440
+    inputs:
+      script: |-
+        npm install
+        npm run lint
+    settings:
+      folded: false
+  - id: github-com-actions-checkout-lemon-pink-apple
+    type: github.com/actions/checkout
+    position:
+      x: 550
+      y: 310
+    settings:
+      folded: false
+  - id: github-com-actions-setup-node-blue-panda-gray
+    type: github.com/actions/setup-node
+    position:
+      x: 1170
+      y: 390
+    inputs:
+      node-version: v20.8.0
+    settings:
+      folded: false
+registries: []
+description: ''
