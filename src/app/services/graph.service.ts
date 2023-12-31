@@ -282,8 +282,8 @@ export class GraphService {
 
     const promisesNodes = [];
 
-    for (const nodeId of associcatedNodes) {
-      promisesNodes.push(g_area!.update("node", nodeId));
+    for (const subNodeId of associcatedNodes) {
+      promisesNodes.push(g_area!.update("node", subNodeId));
     }
 
     await Promise.all(promisesNodes);

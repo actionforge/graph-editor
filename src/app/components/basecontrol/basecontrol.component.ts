@@ -49,7 +49,7 @@ export class BaseControlComponent implements OnChanges {
   @HostListener("wheel", ["$event"])
   @HostListener('dblclick', ["$event"])
   @HostListener('pointerdown', ["$event"])
-  mouseenter(event: MouseEvent) {
+  mouseEnter(event: MouseEvent): void {
 
     // Stop all events from bubbling up as the
     // input field took all the events
@@ -80,7 +80,7 @@ export class BaseControlComponent implements OnChanges {
     }
   }
 
-  onChange(e: Event | KeyboardEvent | FocusEvent, index?: number) {
+  onChange(e: Event | KeyboardEvent | FocusEvent, index?: number): void {
     // Event can be KeyboardEvent or MouseEvent
 
     const target = e.target as HTMLInputElement;

@@ -141,7 +141,7 @@ export class BaseNodeComponent implements OnChanges {
   }
 
   @HostListener('mouseover')
-  onMouseOver() {
+  onMouseOver(): void {
     if (!this.mouseover) {
       this.mouseover = true;
       this.cdr.detectChanges();
@@ -149,7 +149,7 @@ export class BaseNodeComponent implements OnChanges {
   }
 
   @HostListener('mouseout')
-  onMouseOut() {
+  onMouseOut(): void {
     if (this.mouseover) {
       this.mouseover = false;
       this.cdr.detectChanges();

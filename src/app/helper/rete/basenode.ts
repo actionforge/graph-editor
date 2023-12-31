@@ -155,7 +155,7 @@ export class BaseNode extends ClassicPreset.Node {
           group: def.group,
           options: def.options,
           multiline: def.multiline,
-          setValue: (value: unknown) => {
+          setValue: (value: unknown): void => {
             this.setInputValue(inputName, value);
 
             inputChangeEvent.next(value);

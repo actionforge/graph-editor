@@ -40,7 +40,7 @@ export let g_arrange: AutoArrangePlugin<Schemes, never> | undefined;
 
 function addCustomBackground<S extends BaseSchemes, K>(
   area: AreaPlugin<S, K>
-) {
+): void {
   const background = document.createElement("div");
 
   background.classList.add("bg-red-50");
@@ -119,9 +119,11 @@ export async function createEditor(element: HTMLElement, injector: Injector): Pr
   })
 
   g_editor.addPipe((context: Root<Schemes>) => {
-    const { type, data } = context as { type: string, data: { id: string, source: string, sourceOutput: string } };
+    const { type } = context as { type: string };
     switch (type) {
       case "connectioncreated": {
+        const { data } = context as { data: { id: string, source: string, sourceOutput: string } };
+
         const node: BaseNode | undefined = editor.getNode(data.source);
         if (node) {
           node.addOutgoingConnection(data.sourceOutput);
@@ -129,6 +131,8 @@ export async function createEditor(element: HTMLElement, injector: Injector): Pr
         break;
       }
       case "connectionremoved": {
+        const { data } = context as { data: { id: string, source: string, sourceOutput: string } };
+
         const node: BaseNode | undefined = editor.getNode(data.source)
         if (node) {
           node.removeOutgoingConnection(data.sourceOutput);
