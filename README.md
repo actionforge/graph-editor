@@ -4,7 +4,7 @@
 <div align="center" width="100%">
   <img src="assets/logo.svg" alt="Graph Runner Logo">
 
-![ci.yml](https://github.com/actionforge/graph-runner/actions/workflows/ci.yml/badge.svg)
+[![view-action-graph](https://img.shields.io/github/actions/workflow/status/actionforge/graph-editor/workflow.yml?label=View%20Action%20Graph)](https://www.actionforge.dev/github/actionforge/graph-editor/main/.github/workflows/graphs/workflow.yml)
 [![made-with-ts](https://img.shields.io/badge/Made%20with-TS-3178C6.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-ACL-blue?color=orange)](https://www.github.com/actionforge/legal/blob/main/LICENSE.md)
 
