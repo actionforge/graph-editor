@@ -18,20 +18,86 @@ executions:
     dst:
       node: run-v1-parrot-yellow-parrot
       port: exec
-connections: []
+  - src:
+      node: run-v1-parrot-yellow-parrot
+      port: exec-success
+    dst:
+      node: branch-v1-orange-orange-brown
+      port: exec
+  - src:
+      node: github-com-docker-login-action-v3-0-0-giraffe-panda-butterfly
+      port: exec
+    dst:
+      node: github-com-docker-setup-buildx-action-v3-0-0-green-zebra-orange
+      port: exec
+  - src:
+      node: github-com-docker-setup-buildx-action-v3-0-0-green-zebra-orange
+      port: exec
+    dst:
+      node: github-com-docker-build-push-action-v5-1-0-pink-pomegranate-kangaroo
+      port: exec
+  - src:
+      node: branch-v1-orange-orange-brown
+      port: exec-then
+    dst:
+      node: run-v1-red-coconut-watermelon
+      port: exec
+  - src:
+      node: run-v1-red-coconut-watermelon
+      port: exec-success
+    dst:
+      node: github-com-docker-login-action-v3-0-0-giraffe-panda-butterfly
+      port: exec
+connections:
+  - src:
+      node: env-get-v1-brown-cat-grape
+      port: env
+    dst:
+      node: string-fmt-v1-elephant-strawberry-yellow
+      port: input[2]
+  - src:
+      node: env-get-v1-penguin-giraffe-parrot
+      port: env
+    dst:
+      node: string-fmt-v1-elephant-strawberry-yellow
+      port: input[1]
+  - src:
+      node: env-get-v1-penguin-giraffe-parrot
+      port: env
+    dst:
+      node: string-fmt-v1-elephant-strawberry-yellow
+      port: input[0]
+  - src:
+      node: string-match-v1-orange-peach-banana
+      port: result
+    dst:
+      node: branch-v1-orange-orange-brown
+      port: condition
+  - src:
+      node: string-fmt-v1-elephant-strawberry-yellow
+      port: result
+    dst:
+      node: github-com-docker-build-push-action-v5-1-0-pink-pomegranate-kangaroo
+      port: tags
+  - src:
+      node: env-get-v1-watermelon-orange-zebra
+      port: env
+    dst:
+      node: string-match-v1-orange-peach-banana
+      port: str1
 nodes:
   - id: gh-start
     type: gh-start@v1
     position:
-      x: 100
-      y: 100
+      x: 10
+      y: 10
     settings:
       folded: false
   - id: run-v1-parrot-yellow-parrot
     type: run@v1
     position:
-      x: 1750
-      y: 440
+      x: 1150
+      y: 900
     inputs:
       script: |-
         npm install
@@ -41,18 +107,116 @@ nodes:
   - id: github-com-actions-checkout-lemon-pink-apple
     type: github.com/actions/checkout
     position:
-      x: 550
-      y: 310
+      x: 310
+      y: 1000
     settings:
       folded: false
   - id: github-com-actions-setup-node-blue-panda-gray
     type: github.com/actions/setup-node
     position:
-      x: 1170
-      y: 390
+      x: 740
+      y: 990
     inputs:
       node-version: v20.8.0
     settings:
       folded: false
-registries: []
+  - id: string-fmt-v1-elephant-strawberry-yellow
+    type: string-fmt@v1
+    position:
+      x: 2390
+      y: 1720
+    inputs:
+      input[0]: null
+      fmt: ghcr.io/%v:latest,ghcr.io/%v:%v
+      input[1]: null
+      input[2]: null
+    settings:
+      folded: false
+  - id: env-get-v1-brown-cat-grape
+    type: env-get@v1
+    position:
+      x: 2110
+      y: 1900
+    inputs:
+      env: GITHUB_REF_NAME
+    settings:
+      folded: false
+  - id: env-get-v1-penguin-giraffe-parrot
+    type: env-get@v1
+    position:
+      x: 2110
+      y: 1800
+    inputs:
+      env: GITHUB_REPOSITORY
+    settings:
+      folded: false
+  - id: github-com-docker-setup-buildx-action-v3-0-0-green-zebra-orange
+    type: github.com/docker/setup-buildx-action@v3.0.0
+    position:
+      x: 2390
+      y: 1040
+    inputs:
+      platforms: linux/amd64
+    settings:
+      folded: false
+  - id: branch-v1-orange-orange-brown
+    type: branch@v1
+    position:
+      x: 1520
+      y: 1240
+    settings:
+      folded: false
+  - id: string-match-v1-orange-peach-banana
+    type: string-match@v1
+    position:
+      x: 1140
+      y: 1500
+    inputs:
+      op: startswith
+      str2: refs/tags/
+    settings:
+      folded: false
+  - id: github-com-docker-login-action-v3-0-0-giraffe-panda-butterfly
+    type: github.com/docker/login-action@v3.0.0
+    position:
+      x: 2050
+      y: 1160
+    inputs:
+      username: ${{ github.actor }}
+      password: ${{ secrets.GITHUB_TOKEN }}
+      registry: ghcr.io
+    settings:
+      folded: false
+  - id: github-com-docker-build-push-action-v5-1-0-pink-pomegranate-kangaroo
+    type: github.com/docker/build-push-action@v5.1.0
+    position:
+      x: 2760
+      y: 1150
+    inputs:
+      push: 'true'
+      context: .
+    settings:
+      folded: false
+  - id: env-get-v1-watermelon-orange-zebra
+    type: env-get@v1
+    position:
+      x: 880
+      y: 1490
+    inputs:
+      env: GITHUB_REF
+    settings:
+      folded: false
+  - id: run-v1-red-coconut-watermelon
+    type: run@v1
+    position:
+      x: 1740
+      y: 1150
+    inputs:
+      script: npm run build:web
+    settings:
+      folded: false
+registries:
+  - github.com/docker/build-push-action@v5.1.0
+  - github.com/docker/setup-buildx-action@v3.0.0
+  - github.com/docker/login-action@v3.0.0
 description: ''
