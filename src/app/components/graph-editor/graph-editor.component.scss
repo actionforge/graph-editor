@@ -8,16 +8,27 @@
 }
 
 .cid-rete-background {
-  @apply dark:bg-slate-800 h-full w-full;
+  background-color: #1e1e1e;
+
+  @apply h-full w-full;
   background: linear-gradient(to top, rgb(228, 228, 228) 0%, rgb(255, 255, 255) 100%);
+
+  &.readonly {
+    content: "";
+    padding: 25px;
+    background: repeating-linear-gradient(45deg,
+        #606dbc,
+        #606dbc 10px,
+        #465298 10px,
+        #465298 20px);
+  }
 }
 
 .cid-rete {
   @apply h-full w-full;
   @apply bg-rete-light dark:bg-rete-dark;
 
-  background: var(--vscode-editor-background);
-  filter: brightness(1.2);
+  background-color: #1e1e1e;
 
   background-position: -1.5px -1.5px,
     -1.5px -1.5px,
