@@ -19,15 +19,11 @@
   background: var(--vscode-editor-background);
   filter: brightness(1.2);
 
-  &.readonly {
-    filter: grayscale(80%);
-  }
-
   background-position: -1.5px -1.5px,
-  -1.5px -1.5px,
-  -1px -1px,
-  -1px -1px;
+    -1.5px -1.5px,
+    -1px -1px,
+    -1px -1px;
   background-size: 20px 20px,
-  100px 100px,
-  100px 100px;
+    100px 100px,
+    100px 100px;
 }
