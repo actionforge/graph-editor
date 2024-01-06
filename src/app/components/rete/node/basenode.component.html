@@ -1,4 +1,4 @@
-<div *ngIf="getPermission()" [class.opacity-100]="mouseover" class="flex items-center pointer-events-none justify-between gap-x-2 absolute z-[100] px-2 -top-8 h-8 w-full text-gray-700 dark:text-gray-300 
+<div *ngIf="getPermission() === Permission.Writable" [class.opacity-100]="mouseover" class="flex items-center pointer-events-none justify-between gap-x-2 absolute z-[100] px-2 -top-8 h-8 w-full text-gray-700 dark:text-gray-300 
   opacity-0 transition duration-500">
   <!-- Fold Button-->
   <ng-icon [name]="getFoldIcon()" size="18" [matTooltip]="getFoldTooltip()"
