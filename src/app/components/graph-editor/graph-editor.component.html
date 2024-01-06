@@ -28,8 +28,8 @@
    </div>
 
    <!-- Graph Canvas -->
-   <div class="cid-rete-background">
-      <div class="cid-rete" #rete [class.readonly]="(getPermission() | async) === Permission.ReadOnly"> </div>
+   <div class="cid-rete-background" [class.readonly]="isVsCode() && (getPermission() | async) === Permission.ReadOnly">
+      <div class="cid-rete" #rete> </div>
    </div>
 
    <div *ngIf="(getPermission() | async) === Permission.ReadOnly"

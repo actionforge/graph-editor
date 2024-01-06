@@ -226,7 +226,7 @@ export class BaseNodeComponent implements OnChanges {
   }
 
   showInputControl(port: BaseInput): boolean {
-    return !(port.def.group && port.control && port.showControl);
+    return Boolean(!port.def.group && port.control && port.showControl);
   }
 
   showInput(port: BaseInput): boolean {

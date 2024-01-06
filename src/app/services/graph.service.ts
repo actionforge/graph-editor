@@ -83,12 +83,18 @@ export class GraphService {
       if (!graph || Object.keys(graph).length === 0) {
         await nr.loadBasicNodeTypeDefinitions(new Set(["gh-start@v1"]));
 
-        const nodeDef = (nr.getBasicNodeTypeDefinitionsSync() as Map<string, INodeTypeDefinitionBasic>).get("gh-start@v1");
-        if (!nodeDef) {
+        const nodeGhStart = (nr.getBasicNodeTypeDefinitionsSync() as Map<string, INodeTypeDefinitionBasic>).get("gh-start@v1");
+        if (!nodeGhStart) {
           throw new Error("gh-start@v1 not found");
         }
 
+        const nodeGhCheckout = (nr.getBasicNodeTypeDefinitionsSync() as Map<string, INodeTypeDefinitionBasic>).get("github.com/actions/checkout@v4");
+        if (!nodeGhCheckout) {
+          throw new Error("github.com/actions/checkout not found");
+        }
+
         const startNodeId = "gh-start";
+        const checkoutNodeId = "gh-checkout";
 
         g = {
           description: '',
@@ -96,14 +102,29 @@ export class GraphService {
           nodes: [
             {
               id: startNodeId,
-              type: nodeDef!.id,
+              type: nodeGhStart.id,
               inputs: {},
               position: { x: 100, y: 100 },
               settings: undefined,
             },
+            {
+              id: checkoutNodeId,
+              type: nodeGhCheckout.id,
+              inputs: {},
+              position: { x: 450, y: 100 },
+              settings: undefined,
+            },
           ],
           connections: [],
-          executions: [],
+          executions: [{
+            src: {
+              port: "exec-on-push",
+              node: startNodeId,
+            }, dst: {
+              port: "exec",
+              node: checkoutNodeId,
+            }
+          }],
           registries: [],
         };
       }

@@ -1,32 +1,35 @@
-<ng-container [ngSwitch]="data.type">
+<div class="hover:opacity-100" [class.opacity-70]="data.getValue() === data.default">
 
-  <!-- Boolean input -->
-  <ng-container *ngSwitchCase="BaseControlType.bool" [ngTemplateOutlet]="bool"
-    [ngTemplateOutletContext]="{ value: data.getValue() || data.default || false }"></ng-container>
+  <ng-container [ngSwitch]="data.type">
 
-  <!-- Number input -->
-  <ng-container *ngSwitchCase="BaseControlType.number" [ngTemplateOutlet]="number"
-    [ngTemplateOutletContext]="{ value: data.getValue() || data.default || 0 }"></ng-container>
+    <!-- Boolean input -->
+    <ng-container *ngSwitchCase="BaseControlType.bool" [ngTemplateOutlet]="bool"
+      [ngTemplateOutletContext]="{ value: data.getValue() || data.default || false }"></ng-container>
 
-  <!-- String input -->
-  <ng-container *ngSwitchCase="BaseControlType.string" [ngTemplateOutlet]="string"
-    [ngTemplateOutletContext]="{ value: data.getValue() || data.default || '' }"></ng-container>
+    <!-- Number input -->
+    <ng-container *ngSwitchCase="BaseControlType.number" [ngTemplateOutlet]="number"
+      [ngTemplateOutletContext]="{ value: data.getValue() || data.default || 0 }"></ng-container>
 
-  <!-- Option input -->
-  <ng-container *ngSwitchCase="BaseControlType.option" [ngTemplateOutlet]="option"
-    [ngTemplateOutletContext]="{ value: data.getValue() || data.default || '' }"></ng-container>
+    <!-- String input -->
+    <ng-container *ngSwitchCase="BaseControlType.string" [ngTemplateOutlet]="string"
+      [ngTemplateOutletContext]="{ value: data.getValue() || data.default || '' }"></ng-container>
 
-  <!-- Array input -->
-  <ng-container *ngSwitchCase="BaseControlType.array_bool" [ngTemplateOutlet]="arrayBoolean"
-    [ngTemplateOutletContext]="{ value: data.getValue() || [] }"></ng-container>
-  <ng-container *ngSwitchCase="BaseControlType.array_number" [ngTemplateOutlet]="arrayNumber"
-    [ngTemplateOutletContext]="{ value: data.getValue() || [] }"></ng-container>
-  <ng-container *ngSwitchCase="BaseControlType.array_string" [ngTemplateOutlet]="arrayString"
-    [ngTemplateOutletContext]="{ value: data.getValue() || [] }">
+    <!-- Option input -->
+    <ng-container *ngSwitchCase="BaseControlType.option" [ngTemplateOutlet]="option"
+      [ngTemplateOutletContext]="{ value: data.getValue() || data.default || '' }"></ng-container>
+
+    <!-- Array input -->
+    <ng-container *ngSwitchCase="BaseControlType.array_bool" [ngTemplateOutlet]="arrayBoolean"
+      [ngTemplateOutletContext]="{ value: data.getValue() || [] }"></ng-container>
+    <ng-container *ngSwitchCase="BaseControlType.array_number" [ngTemplateOutlet]="arrayNumber"
+      [ngTemplateOutletContext]="{ value: data.getValue() || [] }"></ng-container>
+    <ng-container *ngSwitchCase="BaseControlType.array_string" [ngTemplateOutlet]="arrayString"
+      [ngTemplateOutletContext]="{ value: data.getValue() || [] }">
+    </ng-container>
+
   </ng-container>
 
-</ng-container>
-
+</div>
 
 <ng-template #option let-options="options">
   <vscode-dropdown [value]="data.getValue() || data.default || undefined">
@@ -38,7 +41,6 @@
 
 <!-- Single line text field -->
 <ng-template #string let-value="value" let-index="index">
-
   <ng-container *ngIf="!data.multiline; else stringMulti">
     <input type="text" class="w-full cid-input" (keyup)="onChange($event, index)" [class.cid-required]="isEmpty()"
       autocomplete="off" [placeholder]="data.hint || ''" [value]="value"
