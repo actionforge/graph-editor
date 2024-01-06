@@ -88,7 +88,7 @@ export class GraphService {
           throw new Error("gh-start@v1 not found");
         }
 
-        const nodeGhCheckout = (nr.getBasicNodeTypeDefinitionsSync() as Map<string, INodeTypeDefinitionBasic>).get("github.com/actions/checkout");
+        const nodeGhCheckout = (nr.getBasicNodeTypeDefinitionsSync() as Map<string, INodeTypeDefinitionBasic>).get("github.com/actions/checkout@v4");
         if (!nodeGhCheckout) {
           throw new Error("github.com/actions/checkout not found");
         }
