@@ -116,8 +116,18 @@ export class Registry {
         return this.basicNodeTypeObservable$;
     }
 
-    getBasicNodeTypeDefinitionsSync(): Map<string, INodeTypeDefinitionBasic> | 'loading' {
-        return this.partDefs.value;
+    findBasicNodeTypeDefinitionsSync(matchFn: (nodeId: string) => boolean): INodeTypeDefinitionBasic | null {
+        if (this.partDefs.value === 'loading') {
+            throw new Error('Basic node type definitions are still loading');
+        }
+
+        for (const [k, v] of this.partDefs.value) {
+            if (matchFn(k)) {
+                return v;
+            }
+        }
+
+        return null;
     }
 
     getFullNodeTypeDefinitions(): Map<string, INodeTypeDefinitionFull> {
