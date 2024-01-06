@@ -25,17 +25,16 @@ export class Registry {
         try {
             // add some default registry urls
             const registryUriCopy = new Set<string>(registryUrl);
-            registryUriCopy.add("github.com/actions/checkout");
             registryUriCopy.add("github.com/actions/cache");
-            registryUriCopy.add("github.com/actions/publish-action");
-            registryUriCopy.add("github.com/actions/upload-artifact");
+            registryUriCopy.add("github.com/actions/checkout");
             registryUriCopy.add("github.com/actions/create-release");
-            registryUriCopy.add("github.com/actions/upload-release-asset");
+            registryUriCopy.add("github.com/actions/publish-action");
             registryUriCopy.add("github.com/actions/setup-dotnet");
-            registryUriCopy.add("github.com/actions/setup-node");
-            registryUriCopy.add("github.com/actions/setup-java");
             registryUriCopy.add("github.com/actions/setup-go");
+            registryUriCopy.add("github.com/actions/setup-java");
+            registryUriCopy.add("github.com/actions/setup-node");
             registryUriCopy.add("github.com/actions/setup-python");
+            registryUriCopy.add("github.com/actions/upload-artifact");
 
             const nodeDefs = await this.yamlService.httpPost<INodeTypeDefinitionBasic[]>(`${environment.registryUrl}/api/v1/registry/nodedefs/basic`, {
                 registry_uris: [...registryUriCopy]
@@ -116,8 +115,18 @@ export class Registry {
         return this.basicNodeTypeObservable$;
     }
 
-    getBasicNodeTypeDefinitionsSync(): Map<string, INodeTypeDefinitionBasic> | 'loading' {
-        return this.partDefs.value;
+    findBasicNodeTypeDefinitionsSync(matchFn: (nodeId: string) => boolean): INodeTypeDefinitionBasic | null {
+        if (this.partDefs.value === 'loading') {
+            throw new Error('Basic node type definitions are still loading');
+        }
+
+        for (const [k, v] of this.partDefs.value) {
+            if (matchFn(k)) {
+                return v;
+            }
+        }
+
+        return null;
     }
 
     getFullNodeTypeDefinitions(): Map<string, INodeTypeDefinitionFull> {

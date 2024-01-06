@@ -11,7 +11,6 @@ import { AreaPlugin, NodeView } from 'rete-area-plugin';
 import { RegistryUriInfo, uriToString } from '../helper/utils';
 import { VsCodeService } from './vscode.service';
 import { Registry } from './registry.service';
-import { INodeTypeDefinitionBasic } from '../helper/rete/interfaces/nodes';
 
 import AsyncLock from 'async-lock';
 
@@ -80,15 +79,15 @@ export class GraphService {
       this.lastGraph = '';
 
       // Assume this is a new document if graph is empty and prefill with a trigger node
-      if (!graph || Object.keys(graph).length === 0) {
+      if (graph || Object.keys(graph).length === 0) {
         await nr.loadBasicNodeTypeDefinitions(new Set(["gh-start@v1"]));
 
-        const nodeGhStart = (nr.getBasicNodeTypeDefinitionsSync() as Map<string, INodeTypeDefinitionBasic>).get("gh-start@v1");
+        const nodeGhStart = nr.findBasicNodeTypeDefinitionsSync((nodeId: string) => nodeId === "gh-start@v1");
         if (!nodeGhStart) {
           throw new Error("gh-start@v1 not found");
         }
 
-        const nodeGhCheckout = (nr.getBasicNodeTypeDefinitionsSync() as Map<string, INodeTypeDefinitionBasic>).get("github.com/actions/checkout@v4");
+        const nodeGhCheckout = nr.findBasicNodeTypeDefinitionsSync((nodeId: string) => nodeId.startsWith("github.com/actions/checkout"));
         if (!nodeGhCheckout) {
           throw new Error("github.com/actions/checkout not found");
         }
