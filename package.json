@@ -40,9 +40,9 @@
     "rete-minimap-plugin": "2.0.1",
     "rete-readonly-plugin": "2.0.0",
     "rete-render-utils": "2.0.1",
-    "rxjs": "~7.8.1",
+    "rxjs": "7.8.1",
     "tslib": "2.6.2",
-    "zone.js": "~0.13.1"
+    "zone.js": "0.13.1"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "16.2.11",
@@ -51,25 +51,25 @@
     "@angular-eslint/eslint-plugin-template": "16.3.1",
     "@angular-eslint/schematics": "16.3.1",
     "@angular-eslint/template-parser": "16.3.1",
-    "@angular/cli": "~16.2.11",
+    "@angular/cli": "16.2.11",
     "@angular/compiler-cli": "16.2.12",
     "@types/async-lock": "1.4.2",
     "@types/dompurify": "3.0.5",
-    "@types/jasmine": "~5.1.4",
+    "@types/jasmine": "5.1.4",
     "@types/js-yaml": "4.0.9",
     "@types/lodash.debounce": "4.0.9",
-    "@typescript-eslint/eslint-plugin": "6.17.0",
-    "@typescript-eslint/parser": "6.17.0",
+    "@typescript-eslint/eslint-plugin": "6.18.0",
+    "@typescript-eslint/parser": "6.18.0",
     "autoprefixer": "10.4.16",
     "eslint": "8.56.0",
-    "jasmine-core": "~5.1.1",
-    "karma": "~6.4.2",
-    "karma-chrome-launcher": "~3.2.0",
-    "karma-coverage": "~2.2.1",
-    "karma-jasmine": "~5.1.0",
-    "karma-jasmine-html-reporter": "~2.1.0",
+    "jasmine-core": "5.1.1",
+    "karma": "6.4.2",
+    "karma-chrome-launcher": "3.2.0",
+    "karma-coverage": "2.2.1",
+    "karma-jasmine": "5.1.0",
+    "karma-jasmine-html-reporter": "2.1.0",
     "postcss": "8.4.33",
     "tailwindcss": "3.4.1",
-    "typescript": "~5.1.0"
+    "typescript": "5.1.6"
   }
 }
