@@ -28,7 +28,6 @@ export class Registry {
             registryUriCopy.add("github.com/actions/cache");
             registryUriCopy.add("github.com/actions/checkout");
             registryUriCopy.add("github.com/actions/create-release");
-            registryUriCopy.add("github.com/actions/publish-action");
             registryUriCopy.add("github.com/actions/setup-dotnet");
             registryUriCopy.add("github.com/actions/setup-go");
             registryUriCopy.add("github.com/actions/setup-java");
