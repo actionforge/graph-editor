@@ -43,6 +43,7 @@ export interface RegistryUriInfo {
     registry: string;
     owner: string;
     regname: string;
+    hash: string;
     ref: string;
 }
 
@@ -54,9 +55,10 @@ export function uriToString(uri: RegistryUriInfo): string {
 
     r = `${r}${uri.owner}/${uri.regname}`;
 
-    if (uri.ref) {
-        r = `${r}@${uri.ref}`;
+    if (uri.hash) {
+        r = `${r}@${uri.hash}`;
     }
+
     return r;
 }
 
@@ -107,7 +109,6 @@ export function parseRegistryUri(uri: string): RegistryUriInfo {
         }
     }
 
-
     // As a fallback, if YAML failed, try to parse the node type uri
     // if it fits the format of[registry:]name/foo[@ref]
     const matches = uri.match(/^(([-.\w]+)\/)?([-\w]+)\/([-\w]+)((@([-.\w]+))?)$/);
@@ -120,6 +121,7 @@ export function parseRegistryUri(uri: string): RegistryUriInfo {
         registry: matches[2].toLowerCase(),
         owner: matches[3].toLowerCase(),
         regname: matches[4].toLowerCase(),
-        ref: matches[7].toLowerCase(),
+        hash: matches[7].toLowerCase(),
+        ref: '',
     };
 }

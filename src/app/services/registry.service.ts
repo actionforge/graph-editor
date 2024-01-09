@@ -25,7 +25,7 @@ export class Registry {
         try {
             // add some default registry urls
             const registryUriCopy = new Set<string>(registryUrl);
-            registryUriCopy.add("github.com/actions/cache");
+            // registryUriCopy.add("github.com/actions/cache");
             registryUriCopy.add("github.com/actions/checkout");
             registryUriCopy.add("github.com/actions/create-release");
             registryUriCopy.add("github.com/actions/setup-dotnet");
@@ -57,9 +57,9 @@ export class Registry {
     async loadRegistry(uri: string): Promise<void> {
         const registries = this.gs.getRegistriesCopy();
         const uriInfo: RegistryUriInfo = parseRegistryUri(uri);
-        if (!uriInfo.ref) {
-            const latestVersion = await this.getLatestNodeTypeVersion(uriToString(uriInfo));
-            uriInfo.ref = latestVersion;
+        if (!uriInfo.hash) {
+            const { target } = await this.resolveNodeTypeVersion(uriToString(uriInfo));
+            uriInfo.hash = target;
         }
         registries.add(uriToString(uriInfo));
 
@@ -89,18 +89,18 @@ export class Registry {
         }
     }
 
-    async getLatestNodeTypeVersion(registryUrl: string): Promise<string> {
+    async resolveNodeTypeVersion(registryUrl: string): Promise<{ target: string }> {
         try {
             interface IVersion {
-                version: string
+                target: string;
             }
-            const res = await this.yamlService.httpPost<IVersion>(`${environment.registryUrl}/api/v1/registry/nodedefs/latest`, {
+            const res = await this.yamlService.httpPost<IVersion>(`${environment.gatewayUrl}/api/v1/registry/nodedefs/resolve`, {
                 registry_uri: registryUrl
             }, {
                 withCredentials: false
             })
 
-            return res.version;
+            return { "target": res.target };
         } catch (error) {
             if (error instanceof HttpErrorResponse) {
                 throw new Error(error.error)
