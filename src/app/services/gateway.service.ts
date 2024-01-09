@@ -24,7 +24,7 @@ export class GatewayService {
                 ref: source.ref,
                 path: source.path,
             }, {
-                withCredentials: true
+                withCredentials: false
             });
             if (!graph) {
                 throw new Error(`graph ${source.owner} not found`);
