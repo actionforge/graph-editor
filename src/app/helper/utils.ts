@@ -43,7 +43,6 @@ export interface RegistryUriInfo {
     registry: string;
     owner: string;
     regname: string;
-    hash: string;
     ref: string;
 }
 
@@ -55,8 +54,8 @@ export function uriToString(uri: RegistryUriInfo): string {
 
     r = `${r}${uri.owner}/${uri.regname}`;
 
-    if (uri.hash) {
-        r = `${r}@${uri.hash}`;
+    if (uri.ref) {
+        r = `${r}@${uri.ref}`;
     }
 
     return r;
@@ -84,7 +83,7 @@ export function parseRegistryUri(uri: string): RegistryUriInfo {
 
     let allowFallback = true;
 
-    // If the uri is a Yaml file, check if it is from the github marketplace
+    // If the uri is a yaml string, check if it is from the github marketplace
     try {
         interface GitHubActionStep {
             name: string;
@@ -121,7 +120,6 @@ export function parseRegistryUri(uri: string): RegistryUriInfo {
         registry: matches[2].toLowerCase(),
         owner: matches[3].toLowerCase(),
         regname: matches[4].toLowerCase(),
-        hash: matches[7].toLowerCase(),
-        ref: '',
+        ref: matches[7].toLowerCase(),
     };
 }

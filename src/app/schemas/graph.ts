@@ -35,11 +35,6 @@ export interface INode {
     settings?: ISettings;
 }
 
-export interface IRegistry {
-    uri: string;
-    target: string;
-}
-
 export interface IExecution {
     src: {
         node: string;
