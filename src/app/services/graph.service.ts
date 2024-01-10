@@ -94,7 +94,7 @@ export class GraphService {
             },
             {
               id: "gh-checkout-latest",
-              type: "github.com/actions/checkout",
+              type: "github.com/actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11", // @v4.1.1
               inputs: {},
               position: { x: 450, y: 100 },
               settings: undefined,
