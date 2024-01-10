@@ -31,7 +31,7 @@
                 <ul *ngIf="nodes.size > 0" class="cid-scrollbar">
                     <li *ngFor="let node of nodes | keyvalue" (click)="onCreateNode($event, node.value)" (keyup)="0"
                         tabindex="0" class="flex flex-col gap-y-1 cursor-pointer w-full px-2 py-2 cid-registry"
-                        [matTooltip]="node.value.id + ' ' + node.value.description" matTooltipPosition="left"
+                        [title]="node.value.id + ' ' + node.value.description" matTooltipPosition="left"
                         matTooltipShowDelay="750">
 
                         <div class="flex flex-row items-center">

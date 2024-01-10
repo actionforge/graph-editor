@@ -1,13 +1,13 @@
 <div *ngIf="getPermission() === Permission.Writable" [class.opacity-100]="mouseover" class="flex items-center pointer-events-none justify-between gap-x-2 absolute z-[100] px-2 -top-8 h-8 w-full text-gray-700 dark:text-gray-300 
   opacity-0 transition duration-500">
   <!-- Fold Button-->
-  <ng-icon [name]="getFoldIcon()" size="18" [matTooltip]="getFoldTooltip()"
-    (pointerdown)="onShowHideConnectedPorts($event)" matTooltipPosition="above"
+  <ng-icon [name]="getFoldIcon()" size="18" [title]="getFoldTooltip()" (pointerdown)="onShowHideConnectedPorts($event)"
+    matTooltipPosition="above"
     class="pointer-events-auto cursor-pointer text-sm text-gray-300 dark:text-white hover:text-blue-500 hover:dark:text-blue-500"></ng-icon>
 
   <!-- Delete Node Button-->
   <ng-icon *ngIf="!data.getDefinition().entry" (pointerdown)="onDeleteNode($event)" name="octTrash" size="18"
-    matTooltip="Delete Node" matTooltipPosition="above"
+    title="Delete Node" matTooltipPosition="above"
     class="pointer-events-auto cursor-pointer text-sm text-gray-300 dark:text-white hover:text-red-500 hover:dark:text-red-500"></ng-icon>
 </div>
 
@@ -33,7 +33,7 @@
       <span class="cid-label">{{getNodeLabel()}}</span>
     </div>
 
-    <span *ngIf="isGitHubAction()" class="cid-id">{{getNodeId()}}</span>
+    <span *ngIf="isGitHubAction()" class="cid-id" [title]="data.getType()">{{getNodeId()}}</span>
 
   </ng-container>
 </div>
