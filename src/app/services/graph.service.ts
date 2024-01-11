@@ -110,9 +110,7 @@ export class GraphService {
               node: "gh-checkout",
             }
           }],
-          registries: [
-            "github.com/actions/checkout@v4"
-          ],
+          registries: [],
         };
       }
 
@@ -306,15 +304,25 @@ export class GraphService {
     return this.permission$.value;
   }
 
-  removeRegistry(registry: string): void {
+  removeRegistry(uri: string): void {
+    try {
+      parseRegistryUri(uri);
+    } catch (error) {
+      console.log(error);
+      return;
+    }
     const registries = this.graphRegistries$.value;
-    registries.delete(registry);
+    registries.delete(uri);
     this.graphRegistries$.next(registries);
   }
 
   addRegistry(uri: string): void {
-    parseRegistryUri(uri);
-
+    try {
+      parseRegistryUri(uri);
+    } catch (error) {
+      console.log(error);
+      return;
+    }
     const registries = this.graphRegistries$.value;
     registries.add(uri);
     this.graphRegistries$.next(registries);
