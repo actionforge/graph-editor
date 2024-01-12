@@ -73,11 +73,10 @@ export function parseRegistryUri(uri: string): RegistryUriInfo {
         }
 
         return {
-            // http/https is matches[1] and skipped
             registry: matches[3].toLowerCase(),
             owner: matches[6].toLowerCase(),
             regname: matches[7].toLowerCase(),
-            ref: "", // TODO: (Seb) Check if the url contains a ref
+            ref: matches[9],
         };
     }
 
