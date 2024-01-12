@@ -95,27 +95,6 @@ export class Registry {
         this.gs.addRegistry(uri);
     }
 
-    async resolveNodeTypeVersion(registryUrl: string): Promise<{ target: string }> {
-        try {
-            interface IVersion {
-                target: string;
-            }
-            const res = await this.yamlService.httpPost<IVersion>(`${environment.gatewayUrl}/api/v1/registry/nodedefs/resolve`, {
-                registry_uri: registryUrl
-            }, {
-                withCredentials: false
-            })
-
-            return { "target": res.target };
-        } catch (error) {
-            if (error instanceof HttpErrorResponse) {
-                throw new Error(error.error)
-            } else {
-                throw error;
-            }
-        }
-    }
-
     getBasicNodeTypeDefinitions(): Observable<Map<string, INodeTypeDefinitionBasic> | 'loading'> {
         return this.basicNodeTypeObservable$;
     }
