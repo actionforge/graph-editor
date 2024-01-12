@@ -27,14 +27,14 @@
       </div>
    </div>
 
-   <!-- Graph Canvas -->
-   <div class="cid-rete-background" [class.readonly]="isVsCode() && (getPermission() | async) === Permission.ReadOnly">
-      <div class="cid-rete" #rete> </div>
-   </div>
-
    <div *ngIf="(getPermission() | async) === Permission.ReadOnly"
       class="absolute flex items-center justify-center w-40 h-8 right-0 dark:bg-gray-800 transform rotate-45 translate-y-6 translate-x-12">
       Read only
+   </div>
+
+   <!-- Graph Canvas -->
+   <div class="cid-rete-background" [class.readonly]="isVsCode() && (getPermission() | async) === Permission.ReadOnly">
+      <div class="cid-rete" #rete> </div>
    </div>
 
    <!-- Sidebar -->

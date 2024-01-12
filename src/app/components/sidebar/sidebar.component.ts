@@ -56,14 +56,14 @@ export class SidebarComponent {
     }
   }
 
-  async onCreateNode(event: MouseEvent, nodeType: INodeTypeDefinitionBasic): Promise<void> {
+  async onCreateNode(event: MouseEvent, nodeTypeId: string): Promise<void> {
     event.preventDefault();
     event.stopPropagation();
 
-    await this.gs.createNode(nodeType.id, null, true);
+    await this.gs.createNode(nodeTypeId, null, true);
   }
 
-  getNodeTypeId(nodeType: INodeTypeDefinitionBasic): string {
-    return nodeType.id.substring('github.com/'.length);
+  trimNodeUri(nodeUri: string): string {
+    return nodeUri.substring('github.com/'.length);
   }
 }

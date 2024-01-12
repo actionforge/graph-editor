@@ -8,7 +8,7 @@ import { IConnection, IExecution, IGraph, IInput, IOutput, INode } from '../sche
 import { NodeEditor } from 'rete';
 import { AreaExtra, Schemes, g_area, g_editor } from '../helper/rete/editor';
 import { AreaPlugin, NodeView } from 'rete-area-plugin';
-import { RegistryUriInfo, uriToString } from '../helper/utils';
+import { parseRegistryUri } from '../helper/utils';
 import { VsCodeService } from './vscode.service';
 import { Registry } from './registry.service';
 
@@ -79,36 +79,22 @@ export class GraphService {
       this.lastGraph = '';
 
       // Assume this is a new document if graph is empty and prefill with a trigger node
-      if (graph || Object.keys(graph).length === 0) {
-        await nr.loadBasicNodeTypeDefinitions(new Set(["gh-start@v1"]));
-
-        const nodeGhStart = nr.findBasicNodeTypeDefinitionsSync((nodeId: string) => nodeId === "gh-start@v1");
-        if (!nodeGhStart) {
-          throw new Error("gh-start@v1 not found");
-        }
-
-        const nodeGhCheckout = nr.findBasicNodeTypeDefinitionsSync((nodeId: string) => nodeId.startsWith("github.com/actions/checkout"));
-        if (!nodeGhCheckout) {
-          throw new Error("github.com/actions/checkout not found");
-        }
-
-        const startNodeId = "gh-start";
-        const checkoutNodeId = "gh-checkout";
+      if (graph === "" || Object.keys(g).length === 0) {
 
         g = {
           description: '',
-          entry: startNodeId,
+          entry: "gh-start",
           nodes: [
             {
-              id: startNodeId,
-              type: nodeGhStart.id,
+              id: "gh-start",
+              type: "gh-start@v1",
               inputs: {},
               position: { x: 100, y: 100 },
               settings: undefined,
             },
             {
-              id: checkoutNodeId,
-              type: nodeGhCheckout.id,
+              id: "gh-checkout",
+              type: "github.com/actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11", // @v4.1.1
               inputs: {},
               position: { x: 450, y: 100 },
               settings: undefined,
@@ -118,25 +104,27 @@ export class GraphService {
           executions: [{
             src: {
               port: "exec-on-push",
-              node: startNodeId,
+              node: "gh-start",
             }, dst: {
               port: "exec",
-              node: checkoutNodeId,
+              node: "gh-checkout",
             }
           }],
           registries: [],
         };
       }
 
-      const prom = nr.loadBasicNodeTypeDefinitions(this.getRegistries());
+      const registries = new Set(g.registries);
+      const prom = nr.loadBasicNodeTypeDefinitions(registries);
 
       await cb(g);
 
       await Promise.all([prom]);
 
       this.lastGraph = graph;
-      this.graphRegistries$.next(new Set(g.registries));
+
       this.graphEntry$.next(g.entry);
+      this.graphRegistries$.next(registries);
       this.permission$.next(writable ? Permission.Writable : Permission.ReadOnly);
     });
   }
@@ -245,9 +233,9 @@ export class GraphService {
 
     const graph: IGraph = {
       entry,
-      executions: executions,
-      connections: connections,
-      nodes: nodes,
+      executions,
+      connections,
+      nodes,
       registries: [...gs.getRegistries()],
       description,
     };
@@ -262,7 +250,7 @@ export class GraphService {
   }
 
   async createNode(nodeTypeId: string, nodeId: string | null, userCreated: boolean, inputs?: { [key: string]: IInput }, outputs?: { [key: string]: IOutput }): Promise<BaseNode> {
-    const sanitizedNodeId = nodeTypeId.replace(/[^a-zA-Z0-9-]/g, '-');
+    const sanitizedNodeId = nodeTypeId.replace(/[^a-zA-Z0-9-]/g, '-').replace(/^github.com-/, 'gh-')
 
     if (!nodeId) {
       nodeId = `${sanitizedNodeId}-${generateRandomWord(3)}`
@@ -317,23 +305,27 @@ export class GraphService {
     return this.permission$.value;
   }
 
-  removeRegistry(registry: string): void {
+  removeRegistry(uri: string): void {
+    try {
+      parseRegistryUri(uri);
+    } catch (error) {
+      console.log(error);
+      return;
+    }
     const registries = this.graphRegistries$.value;
-    registries.delete(registry);
+    registries.delete(uri);
     this.graphRegistries$.next(registries);
   }
 
-  addRegistry(registry: RegistryUriInfo): void {
-    // Caller has to make sure that all fields of the type uri are filled
-    if (registry.registry === ""
-      || registry.owner === ""
-      || registry.regname === ""
-    ) {
-      throw new Error("Invalid registry uri");
+  addRegistry(uri: string): void {
+    try {
+      parseRegistryUri(uri);
+    } catch (error) {
+      console.log(error);
+      return;
     }
-
     const registries = this.graphRegistries$.value;
-    registries.add(uriToString(registry));
+    registries.add(uri);
     this.graphRegistries$.next(registries);
   }
 

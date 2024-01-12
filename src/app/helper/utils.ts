@@ -57,6 +57,7 @@ export function uriToString(uri: RegistryUriInfo): string {
     if (uri.ref) {
         r = `${r}@${uri.ref}`;
     }
+
     return r;
 }
 
@@ -82,7 +83,7 @@ export function parseRegistryUri(uri: string): RegistryUriInfo {
 
     let allowFallback = true;
 
-    // If the uri is a Yaml file, check if it is from the github marketplace
+    // If the uri is a yaml string, check if it is from the github marketplace
     try {
         interface GitHubActionStep {
             name: string;
@@ -106,7 +107,6 @@ export function parseRegistryUri(uri: string): RegistryUriInfo {
             throw error;
         }
     }
-
 
     // As a fallback, if YAML failed, try to parse the node type uri
     // if it fits the format of[registry:]name/foo[@ref]
