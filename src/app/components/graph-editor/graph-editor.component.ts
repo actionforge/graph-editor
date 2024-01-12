@@ -445,28 +445,27 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     } else {
 
       try {
-        // ensure 'owner' and 'repo' are conform to GitHub name rules.
-        // TODO: (Seb) Find proper ruleset in GH docs.
-        const pattern = /github\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)/;
-        const match = location.pathname.match(pattern);
-        if (!match) {
-          throw new Error('invalid url');
+
+        if (location.pathname !== '/') {
+          const re = /github\/(?<owner>[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38})\/(?<repo>[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38})\/(?<ref>.+)\/(?<path>.github\/.+\.yml)/;
+
+          const components: RegExpExecArray | null = re.exec(location.pathname);
+          if (!components) {
+            throw new Error('invalid url format');
+          }
+
+          const { owner, repo, ref, path } = components.groups as { [key: string]: string };
+
+          if (!owner || !repo || !ref || !path) {
+            throw new Error('invalid url');
+          }
+
+          const graph: IGraph = await this.gw.graphRead({
+            provider: 'github', owner, repo, ref, path,
+          });
+
+          await this.openGraph(location.pathname, dump(graph), null);
         }
-
-        const owner = match[1] as string;
-        const repo = match[2] as string;
-        const ref = match[3] as string;
-        const path = match[4] as string;
-        if (!owner || !repo || !ref || !path) {
-          throw new Error('invalid url');
-        }
-
-        const graph: IGraph = await this.gw.graphRead({
-          provider: 'github', owner, repo, ref, path,
-        });
-
-
-        await this.openGraph(location.pathname, dump(graph), null);
       } catch (error) {
         void this.ns.showNotification(NotificationType.Error, getErrorMessage(error));
       }
