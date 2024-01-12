@@ -67,18 +67,16 @@ export function parseRegistryUri(uri: string): RegistryUriInfo {
         uri.startsWith("www.") ||
         uri.startsWith("github.com")
     ) {
-        // TODO: (Seb) User might enter www.github.com or github.com without http/https.
-        const matches = uri.match(/^((http:\/\/|https:\/\/)?)((www.)?github.com)(\/marketplace)?\/(.+?)\/(.+?)$/);
+        const matches = uri.match(/^((http:\/\/|https:\/\/)?)((www.)?github.com)(\/marketplace)?\/(.+?)\/(.+?)(@([a-zA-Z][a-zA-Z0-9._/-]*)?)$/);
         if (!matches) {
             throw new Error("invalid node type id");
         }
 
         return {
-            // http/https is matches[1] and skipped
             registry: matches[3].toLowerCase(),
             owner: matches[6].toLowerCase(),
             regname: matches[7].toLowerCase(),
-            ref: "", // TODO: (Seb) Check if the url contains a ref
+            ref: matches[9],
         };
     }
 
@@ -112,7 +110,7 @@ export function parseRegistryUri(uri: string): RegistryUriInfo {
 
     // As a fallback, if YAML failed, try to parse the node type uri
     // if it fits the format of[registry:]name/foo[@ref]
-    const matches = uri.match(/(([-.\w]+)\/)?([-\w]+)\/([-\w]+)((@([-.\w]+))?)/);
+    const matches = uri.match(/^(([-.\w]+)\/)?([-\w]+)\/([-\w]+)((@([-.\w]+))?)$/);
     if (!matches) {
         throw new Error("invalid node type id");
     }
