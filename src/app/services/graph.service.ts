@@ -114,7 +114,8 @@ export class GraphService {
         };
       }
 
-      const prom = nr.loadBasicNodeTypeDefinitions(this.getRegistries());
+      const registries = new Set(g.registries);
+      const prom = nr.loadBasicNodeTypeDefinitions(registries);
 
       await cb(g);
 
@@ -123,7 +124,7 @@ export class GraphService {
       this.lastGraph = graph;
 
       this.graphEntry$.next(g.entry);
-      this.graphRegistries$.next(new Set(g.registries));
+      this.graphRegistries$.next(registries);
       this.permission$.next(writable ? Permission.Writable : Permission.ReadOnly);
     });
   }
