@@ -79,7 +79,7 @@ export class GraphService {
       this.lastGraph = '';
 
       // Assume this is a new document if graph is empty and prefill with a trigger node
-      if (graph || Object.keys(graph).length === 0) {
+      if (graph === "" || Object.keys(g).length === 0) {
 
         g = {
           description: '',
