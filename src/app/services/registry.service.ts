@@ -24,15 +24,15 @@ export class Registry {
     async loadBasicNodeTypeDefinitions(registryUris: Set<string>): Promise<void> {
         try {
             const nodeUris = [
-                "github.com/actions/cache@latest",
-                "github.com/actions/checkout@latest",
-                "github.com/actions/create-release@latest",
-                "github.com/actions/setup-dotnet@latest",
-                "github.com/actions/setup-go@latest",
-                "github.com/actions/setup-java@latest",
-                "github.com/actions/setup-node@latest",
-                "github.com/actions/setup-python@latest",
-                "github.com/actions/upload-artifact@latest",
+                "github.com/actions/cache",
+                "github.com/actions/checkout",
+                "github.com/actions/create-release",
+                "github.com/actions/setup-dotnet",
+                "github.com/actions/setup-go",
+                "github.com/actions/setup-java",
+                "github.com/actions/setup-node",
+                "github.com/actions/setup-python",
+                "github.com/actions/upload-artifact",
             ];
 
             for (const nodeUri of nodeUris) {
