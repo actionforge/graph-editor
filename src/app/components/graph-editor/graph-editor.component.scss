@@ -15,10 +15,10 @@
 
   &.readonly {
     content: "";
-    padding: 25px;
+    padding: 5px;
     background: repeating-linear-gradient(45deg,
-        #606dbc,
-        #606dbc 10px,
+        var(--vscode-editor-background),
+        var(--vscode-editor-background) 10px,
         #465298 10px,
         #465298 20px);
   }
