@@ -86,7 +86,7 @@ export class Registry {
         }
     }
 
-    async loadRegistry(uri: string): Promise<void> {
+    async loadRegistry(uri: string): Promise<RegistryUriInfo> {
         const ruri: RegistryUriInfo = parseRegistryUri(uri);
         uri = uriToString(ruri);
 
@@ -95,6 +95,7 @@ export class Registry {
         await this.loadBasicNodeTypeDefinitions(registries);
 
         this.gs.addRegistry(uri);
+        return ruri;
     }
 
     getBasicNodeTypeDefinitions(): Observable<Map<string, INodeTypeDefinitionBasic> | 'loading'> {

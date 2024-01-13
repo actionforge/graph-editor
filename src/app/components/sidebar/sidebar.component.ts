@@ -6,7 +6,7 @@ import { INodeTypeDefinitionBasic } from 'src/app/helper/rete/interfaces/nodes';
 import { NodeFactory } from 'src/app/services/nodefactory.service';
 import { Observable } from 'rxjs';
 import { provideVSCodeDesignSystem, vsCodeButton } from "@vscode/webview-ui-toolkit";
-import { getErrorMessage } from 'src/app/helper/utils';
+import { RegistryUriInfo, getErrorMessage } from 'src/app/helper/utils';
 import { environment } from 'src/environments/environment';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { g_area, g_editor } from 'src/app/helper/rete/editor';
@@ -49,7 +49,8 @@ export class SidebarComponent {
     event.stopPropagation();
 
     try {
-      await this.nr.loadRegistry(registryUri);
+      const ruri: RegistryUriInfo = await this.nr.loadRegistry(registryUri);
+      void this.ns.showNotification(NotificationType.Success, `Loaded ${ruri.owner}/${ruri.regname}@${ruri.ref} successfully.`);
     } catch (error) {
       console.error(error);
       this.ns.showNotification(NotificationType.Error, getErrorMessage(error));
