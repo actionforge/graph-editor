@@ -23,6 +23,8 @@ export class Registry {
 
     async loadBasicNodeTypeDefinitions(registryUris: Set<string>): Promise<void> {
         try {
+            registryUris = new Set(registryUris);
+
             const nodeUris = [
                 "github.com/actions/cache",
                 "github.com/actions/checkout",
@@ -84,7 +86,7 @@ export class Registry {
         }
     }
 
-    async loadRegistry(uri: string): Promise<void> {
+    async loadRegistry(uri: string): Promise<RegistryUriInfo> {
         const ruri: RegistryUriInfo = parseRegistryUri(uri);
         uri = uriToString(ruri);
 
@@ -93,6 +95,7 @@ export class Registry {
         await this.loadBasicNodeTypeDefinitions(registries);
 
         this.gs.addRegistry(uri);
+        return ruri;
     }
 
     getBasicNodeTypeDefinitions(): Observable<Map<string, INodeTypeDefinitionBasic> | 'loading'> {
