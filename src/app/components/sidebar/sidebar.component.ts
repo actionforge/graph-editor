@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, Injector, inject } from '@angular/core';
 import { GraphService } from 'src/app/services/graph.service';
 import { NotificationService, NotificationType } from 'src/app/services/notification.service';
 import { Registry } from 'src/app/services/registry.service';
@@ -10,6 +10,7 @@ import { RegistryUriInfo, getErrorMessage } from 'src/app/helper/utils';
 import { environment } from 'src/environments/environment';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { g_area, g_editor } from 'src/app/helper/rete/editor';
+import { VsCodeService } from 'src/app/services/vscode.service';
 
 provideVSCodeDesignSystem().register(vsCodeButton());
 
@@ -23,7 +24,8 @@ export class SidebarComponent {
   nr = inject(Registry);
   ns = inject(NotificationService);
   gs = inject(GraphService);
-  clipboard = inject(Clipboard)
+  clipboard = inject(Clipboard);
+  injector = inject(Injector);
 
   nodeUrl = "";
 
@@ -50,6 +52,13 @@ export class SidebarComponent {
 
     try {
       const ruri: RegistryUriInfo = await this.nr.loadRegistry(registryUri);
+
+      if (this.isVsCode()) {
+        const vscode = this.injector.get(VsCodeService);
+        const graph = this.gs.serializeGraph(g_editor!, g_area!, '');
+        void vscode.postMessage({ type: 'saveGraph', data: graph });
+      }
+
       void this.ns.showNotification(NotificationType.Success, `Loaded ${ruri.owner}/${ruri.regname}@${ruri.ref} successfully.`);
     } catch (error) {
       console.error(error);
