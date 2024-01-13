@@ -23,6 +23,8 @@ export class Registry {
 
     async loadBasicNodeTypeDefinitions(registryUris: Set<string>): Promise<void> {
         try {
+            registryUris = new Set(registryUris);
+
             const nodeUris = [
                 "github.com/actions/cache",
                 "github.com/actions/checkout",
