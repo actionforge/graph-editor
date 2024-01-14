@@ -60,7 +60,7 @@
 </ng-template>
 
 <ng-template #number let-value="value">
-  <input #input type="number" (keyup)="onChange($event)" [value]="value"
+  <input #input type="number" (keyup)="onChange($event)" (blur)="onChange($event, undefined, true)" [value]="value"
     [readonly]="getPermission() === Permission.ReadOnly" [title]="value" [step]="data.step " placeholder=" " />
 </ng-template>
 

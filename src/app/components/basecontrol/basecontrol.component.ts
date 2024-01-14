@@ -80,7 +80,7 @@ export class BaseControlComponent implements OnChanges {
     }
   }
 
-  onChange(e: Event | KeyboardEvent | FocusEvent, index?: number): void {
+  onChange(e: Event | KeyboardEvent | FocusEvent, index?: number, commit?: boolean): void {
     // Event can be KeyboardEvent or MouseEvent
 
     const target = e.target as HTMLInputElement;
@@ -121,9 +121,16 @@ export class BaseControlComponent implements OnChanges {
         break;
       }
       case BaseControlType.number: {
+        if (e instanceof KeyboardEvent && e.key === 'Enter') {
+          commit = true;
+        }
+
         let value = target.value;
         if (value === "") {
-          value = this.data.default ? `${this.data.default}` : '0';
+          value = this.data.default ? `${this.data.default}` : '';
+          if (commit && value === "") {
+            value = "0";
+          }
         }
         target.value = value as string;
         this.data.setValue(+value);
