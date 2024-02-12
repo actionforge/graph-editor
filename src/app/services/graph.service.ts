@@ -9,7 +9,7 @@ import { NodeEditor } from 'rete';
 import { AreaExtra, Schemes, g_area, g_editor } from '../helper/rete/editor';
 import { AreaPlugin, NodeView } from 'rete-area-plugin';
 import { parseRegistryUri } from '../helper/utils';
-import { VsCodeService } from './vscode.service';
+import { HostService } from './host.service';
 import { Registry } from './registry.service';
 
 import AsyncLock from 'async-lock';
@@ -35,7 +35,7 @@ export enum Permission {
 export class GraphService {
   nf = inject(NodeFactory);
   injector = inject(Injector);
-  vscode = inject(VsCodeService);
+  vscode = inject(HostService);
 
   loadingLock = new AsyncLock();
 
@@ -125,7 +125,7 @@ export class GraphService {
 
       this.graphEntry$.next(g.entry);
       this.graphRegistries$.next(registries);
-      this.permission$.next(writable ? Permission.Writable : Permission.ReadOnly);
+      this.permission$.next(Permission.Writable);
     });
   }
 

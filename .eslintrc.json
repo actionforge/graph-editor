@@ -7,7 +7,7 @@
   ],
   "parserOptions": {
     "project": [
-      "tsconfig.(app|spec|vscode).json"
+      "tsconfig.(app|spec|vscode|electron).json"
     ]
   },
   "overrides": [

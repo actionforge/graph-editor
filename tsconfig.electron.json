@@ -8,7 +8,7 @@
     ],
     "exclude": [
         "src/environments/environment.dev.ts",
-        "src/environments/environment.web.ts",
-        "src/environments/environment.electron.ts"
+        "src/environments/environment.vscode.ts",
+        "src/environments/environment.web.ts"
     ]
 }

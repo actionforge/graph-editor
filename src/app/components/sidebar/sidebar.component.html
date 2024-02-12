@@ -5,7 +5,8 @@
         <!-- Inputs -->
         <div class="px-4 flex flex-col gap-y-4 mt-4">
             <!-- Markteplace -->
-            <a *ngIf="isVsCode()" href="https://github.com/marketplace?type=actions" target="_blank" rel="noreferrer">
+            <a *ngIf="isVsCode() || isElectron()" href="https://github.com/marketplace?type=actions" target="_blank"
+                rel="noreferrer">
                 <vscode-button class="secondary w-full h-[2rem] mb-1.5">
                     Open GitHub Marketplace
                 </vscode-button>

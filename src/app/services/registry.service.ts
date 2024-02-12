@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
-import { VsCodeService } from "src/app/services/vscode.service";
+import { HostService } from "src/app/services/host.service";
 import { YamlService } from "src/app/services/yaml.service";
 import { environment } from "src/environments/environment";
 import { INodeTypeDefinitionBasic, INodeTypeDefinitionFull } from "../helper/rete/interfaces/nodes";
@@ -13,7 +13,7 @@ import { GraphService } from "./graph.service";
 })
 export class Registry {
     yamlService = inject(YamlService);
-    vscode = inject(VsCodeService);
+    vscode = inject(HostService);
     gs = inject(GraphService);
 
     private basicDefs = new BehaviorSubject<Map<string, INodeTypeDefinitionBasic> | 'loading'>('loading');

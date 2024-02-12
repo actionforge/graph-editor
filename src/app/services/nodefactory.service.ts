@@ -3,7 +3,7 @@ import { BaseNode } from "../helper/rete/basenode";
 import { IInputDefinition, INodeTypeDefinitionFull, IOutputDefinition } from "../helper/rete/interfaces/nodes";
 import { Registry } from "./registry.service";
 import { IInput, IOutput } from "../schemas/graph";
-import { VsCodeService } from "./vscode.service";
+import { HostService } from "./host.service";
 import { Subject } from "rxjs";
 
 @Injectable({
@@ -11,7 +11,7 @@ import { Subject } from "rxjs";
 })
 export class NodeFactory {
     injector = inject(Injector);
-    vscode = inject(VsCodeService);
+    host = inject(HostService);
 
     async createNode(id: string, type: string, inputChangeEvent: Subject<unknown>, inputs?: { [key: string]: IInput }, outputs?: { [key: string]: IOutput }): Promise<BaseNode> {
 

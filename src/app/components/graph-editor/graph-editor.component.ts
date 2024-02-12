@@ -13,7 +13,7 @@ import { octKey, octTerminal } from '@ng-icons/octicons';
 import { tablerBracketsContain, tablerCursorText } from '@ng-icons/tabler-icons';
 import { YamlService } from 'src/app/services/yaml.service';
 import { allComponents, provideVSCodeDesignSystem } from "@vscode/webview-ui-toolkit";
-import { VsCodeMessage, VsCodeService } from 'src/app/services/vscode.service';
+import { HostAppMessage, HostService } from 'src/app/services/host.service';
 import { svgEnvGetIcon, svgEnvArray, svgArchSwitch, svgFor, svgPlatformSwitch, svgNegate, svgBoolXor, svgBoolXand, svgBoolAnd, svgBoolOr, svgBranchIcon, svgParallelFor, svgParallelExec, svgWaitFor } from 'src/app/helper/icons';
 import { Observable } from 'rxjs';
 import { NotificationService, NotificationType } from 'src/app/services/notification.service';
@@ -51,7 +51,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
   injector = inject(Injector);
   yamlService = inject(YamlService);
-  vscode = inject(VsCodeService);
+  host = inject(HostService);
   cdr = inject(ChangeDetectorRef);
 
   @ViewChild('rete') container!: ElementRef<HTMLElement>;
@@ -168,7 +168,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     ]
   ]
 
-  messageSubscription = this.vscode.messageObservable$.subscribe(async (e: VsCodeMessage) => {
+  messageSubscription = this.host.messageObservable$.subscribe(async (e: HostAppMessage) => {
     const { type, data } = e.data;
     switch (type) {
       case 'arrangeNodes': {
@@ -381,12 +381,11 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
       return context;
     });
 
-    if (environment.vscode) {
-
+    if (environment.vscode || environment.electron) {
       const debounceSaveGraph = debounce(() => {
         if (g_editor && g_area) {
           const graph = this.gs.serializeGraph(g_editor, g_area, '');
-          this.vscode.postMessage({ type: 'saveGraph', data: graph });
+          this.host.postMessage({ type: 'saveGraph', data: graph });
         }
       }, 500, {
         leading: true, // with no delay, send the graph to vscode
@@ -404,13 +403,13 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
           case "nodedragged": {
             if (!this.gs.isLoading()) {
               const graph = this.gs.serializeGraph(editor, area!, '');
-              void this.vscode.postMessage({ type: 'saveGraph', data: graph });
+              void this.host.postMessage({ type: 'saveGraph', data: graph });
             }
             break;
           }
           case "pointerup": { // finish dragging
             if (!this.gs.isLoading()) {
-              void this.vscode.postMessage({ type: 'saveTransform', data: area.area.transform });
+              void this.host.postMessage({ type: 'saveTransform', data: area.area.transform });
             }
             break;
           }
@@ -426,21 +425,20 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
           case "noderemoved":
           case "connectioncreated":
           case "connectionremoved": {
-
             // VS Code has no way of knowing if the events are fired by/during
             // loading of the graph, or are user interactions. To avoid
             // the graph file in VS Code being marked as dirty, only
             // send the 'saveGraph' message outside of the loading operation.
             if (!this.gs.isLoading()) {
               const graph = this.gs.serializeGraph(editor, area!, '');
-              void this.vscode.postMessage({ type: 'saveGraph', data: graph });
+              void this.host.postMessage({ type: 'saveGraph', data: graph });
             }
             break;
           }
         }
         return context;
       });
-    } else {
+    } else if (environment.web) {
 
       try {
 

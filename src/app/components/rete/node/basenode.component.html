@@ -57,8 +57,10 @@
           [emit]="emit"></div>
 
         <!-- Input label -->
-        <span *ngIf="port.value.label as label" class="whitespace-nowrap"
-          [title]="port.value.def.description">{{label}}</span>
+        <ng-container *ngIf="!port.value.isSub()">
+          <span *ngIf="port.value.label as label" class="whitespace-nowrap"
+            [title]="port.value.def.description">{{label}}</span>
+        </ng-container>
 
         <ng-container *ngIf="showInputGroupButtons(port.value)">
           <!-- Push buttons to the right -->

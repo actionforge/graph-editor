@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve --host=0.0.0.0 --port 4400 --disable-host-check",
     "build": "ng build",
+    "build:electron": "ng build --configuration electron",
     "build:vscode": "ng build --configuration vscode",
     "build:web": "ng build --configuration web",
     "watch": "ng build --watch --configuration development",

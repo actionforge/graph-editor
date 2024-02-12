@@ -4,6 +4,7 @@ export const environment = {
     dev: false,
     web: false,
     vscode: false,
+    electron: false,
     registryUrl: '',
     gatewayUrl: '',
 };

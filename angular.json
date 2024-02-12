@@ -70,6 +70,39 @@
                 }
               ]
             },
+            "electron": {
+              "tsConfig": "tsconfig.electron.json",
+              "optimization": true,
+              "sourceMap": false,
+              "namedChunks": false,
+              "aot": true,
+              "extractLicenses": true,
+              "vendorChunk": true,
+              "buildOptimizer": true,
+              "styles": [
+                "src/styles.scss",
+                "src/styles/vscode.polyfill.scss"
+              ],
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "5mb",
+                  "maximumError": "10mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "10kb"
+                }
+              ],
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.electron.ts"
+                }
+              ]
+            },
             "vscode": {
               "tsConfig": "tsconfig.vscode.json",
               "optimization": true,

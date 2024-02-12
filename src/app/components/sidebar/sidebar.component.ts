@@ -10,7 +10,7 @@ import { RegistryUriInfo, getErrorMessage } from 'src/app/helper/utils';
 import { environment } from 'src/environments/environment';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { g_area, g_editor } from 'src/app/helper/rete/editor';
-import { VsCodeService } from 'src/app/services/vscode.service';
+import { HostService as HostService } from 'src/app/services/host.service';
 
 provideVSCodeDesignSystem().register(vsCodeButton());
 
@@ -37,6 +37,10 @@ export class SidebarComponent {
     return environment.vscode;
   }
 
+  isElectron(): boolean {
+    return environment.electron;
+  }
+
   onCopyToClipboard(_event: MouseEvent): void {
     const graph = this.gs.serializeGraph(g_editor!, g_area!, "Dev");
     this.clipboard.copy(graph);
@@ -53,10 +57,10 @@ export class SidebarComponent {
     try {
       const ruri: RegistryUriInfo = await this.nr.loadRegistry(registryUri);
 
-      if (this.isVsCode()) {
-        const vscode = this.injector.get(VsCodeService);
+      if (this.isVsCode() || this.isElectron()) {
+        const host = this.injector.get(HostService);
         const graph = this.gs.serializeGraph(g_editor!, g_area!, '');
-        void vscode.postMessage({ type: 'saveGraph', data: graph });
+        void host.postMessage({ type: 'saveGraph', data: graph });
       }
 
       void this.ns.showNotification(NotificationType.Success, `Loaded ${ruri.owner}/${ruri.regname}@${ruri.ref} successfully.`);
