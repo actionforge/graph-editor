@@ -49,7 +49,14 @@ export class HostService {
         if (this._vscode) {
             this._vscode.postMessage(opts);
         } else if (window.top) {
-            window.top?.postMessage(opts, '*');
+            // Wrap postMessage in setTimeout() to avoid undelivered messages.
+            // In a specific case, when dragging a node that results in
+            // 2 events 'nodedragged' and 'pointerup' that result
+            // in two post messages fired, the second message is not delivered
+            // without setTimeout.
+            setTimeout(() => {
+                window.top?.postMessage(opts, '*');
+            });
         } else {
             throw new Error('no host environment found');
         }

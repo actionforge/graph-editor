@@ -1,7 +1,8 @@
 export const environment = {
   dev: true,
-  web: false,
+  web: true,
   vscode: false,
+  electron: false,
   registryUrl: 'https://www.actionforge.dev',
   gatewayUrl: 'https://www.actionforge.dev',
 };

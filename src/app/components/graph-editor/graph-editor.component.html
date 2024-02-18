@@ -38,7 +38,7 @@
    </div>
 
    <!-- Sidebar -->
-   <ng-container *ngIf="(getPermission() | async) === Permission.Writable">
+   <ng-container *ngIf="(getPermission() | async) === Permission.Writable && isGitHubGraph()">
       <app-sidebar></app-sidebar>
    </ng-container>
 

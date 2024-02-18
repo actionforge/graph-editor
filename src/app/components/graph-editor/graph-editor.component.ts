@@ -9,12 +9,12 @@ import { IGraph, INode } from 'src/app/schemas/graph';
 import { GraphService, Origin, Permission } from 'src/app/services/graph.service';
 import { NodeFactory } from 'src/app/services/nodefactory.service';
 import { Registry } from 'src/app/services/registry.service';
-import { octKey, octTerminal } from '@ng-icons/octicons';
+import { octKey, octPlay, octTerminal } from '@ng-icons/octicons';
 import { tablerBracketsContain, tablerCursorText } from '@ng-icons/tabler-icons';
 import { YamlService } from 'src/app/services/yaml.service';
 import { allComponents, provideVSCodeDesignSystem } from "@vscode/webview-ui-toolkit";
 import { HostAppMessage, HostService } from 'src/app/services/host.service';
-import { svgEnvGetIcon, svgEnvArray, svgArchSwitch, svgFor, svgPlatformSwitch, svgNegate, svgBoolXor, svgBoolXand, svgBoolAnd, svgBoolOr, svgBranchIcon, svgParallelFor, svgParallelExec, svgWaitFor } from 'src/app/helper/icons';
+import { svgEnvGetIcon, svgEnvArray, svgArchSwitch, svgFor, svgPlatformSwitch, svgNegate, svgBoolXor, svgBoolXand, svgBoolAnd, svgBoolOr, svgBranchIcon, svgParallelFor, svgParallelExec, svgWaitFor, svgStringArray, svgHttp, svgPrint } from 'src/app/helper/icons';
 import { Observable } from 'rxjs';
 import { NotificationService, NotificationType } from 'src/app/services/notification.service';
 import { getErrorMessage } from 'src/app/helper/utils';
@@ -66,6 +66,17 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   nodeButtonSeries = [
     [
       {
+        type: "print@v1",
+        icon: svgPrint,
+        tooltip: "Print Stuff",
+      },
+      {
+        type: "http@v1",
+        icon: svgHttp,
+        tooltip: "Http Branch",
+      },
+    ], [
+      {
         type: "branch@v1",
         icon: svgBranchIcon,
         tooltip: "Conditional Branch",
@@ -104,12 +115,6 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
       },
     ], [
       {
-        type: "negate@v1",
-        icon: svgNegate,
-        tooltip: "Negate",
-      }
-    ], [
-      {
         type: "bool-and@v1",
         icon: svgBoolAnd,
         tooltip: "Bool AND",
@@ -128,8 +133,18 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
         type: "bool-xor@v1",
         icon: svgBoolXor,
         tooltip: "Bool XOR",
+      },
+      {
+        type: "negate@v1",
+        icon: svgNegate,
+        tooltip: "Negate",
       }
     ], [
+      {
+        type: "string-array@v1",
+        icon: svgStringArray,
+        tooltip: "String Array",
+      },
       {
         type: "env-get@v1",
         icon: svgEnvGetIcon,
@@ -150,6 +165,11 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
         type: "run@v1",
         icon: octTerminal,
         tooltip: "Run",
+      },
+      {
+        type: "run-exec@v1",
+        icon: octPlay,
+        tooltip: "Run Executable",
       }
     ], [
       {
@@ -167,6 +187,8 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
       }
     ]
   ]
+
+  githubGraph = false;
 
   messageSubscription = this.host.messageObservable$.subscribe(async (e: HostAppMessage) => {
     const { type, data } = e.data;
@@ -211,6 +233,10 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
   isDev(): boolean {
     return environment.dev;
+  }
+
+  isGitHubGraph(): boolean {
+    return this.githubGraph;
   }
 
   getOrigin(): Observable<Origin | null> {
@@ -264,6 +290,8 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     if (!g_editor) {
       throw new Error('Editor not initialized');
     }
+
+    this.githubGraph = graph.entry.startsWith("gh-start");
 
     await g_editor.clear();
 
@@ -321,6 +349,8 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
     await Promise.all(createConnections);
   }
+
+
 
   async ngAfterViewInit(): Promise<void> {
 
@@ -439,6 +469,41 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
         return context;
       });
     } else if (environment.web) {
+
+      const foo = `entry: start
+executions:
+  - src:
+      node: start
+      port: exec
+    dst:
+      node: print-v1-kiwi-dog-apple
+      port: exec
+connections:
+  - src:
+      node: start
+      port: env
+    dst:
+      node: print-v1-kiwi-dog-apple
+      port: value
+nodes:
+  - id: start
+    type: start@v1
+    position:
+      x: 0
+      y: -0.0
+    settings:
+      folded: false
+  - id: print-v1-kiwi-dog-apple
+    type: print@v1
+    position:
+      x: 0
+      y: -0.0
+    settings:
+      folded: false
+registries: []
+description: ''
+`
+      await this.openGraph(location.pathname, foo, null);
 
       try {
 
