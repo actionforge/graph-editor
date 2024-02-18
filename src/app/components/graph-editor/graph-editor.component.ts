@@ -255,9 +255,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
       n.setSettings(node.settings);
     }
 
-    if (node.position?.x > 0 && node.position?.y > 0) {
-      await g_area!.translate(n.id, node.position);
-    }
+    await g_area!.translate(n.id, node.position);
 
     nodes.set(node.id, n);
   }
