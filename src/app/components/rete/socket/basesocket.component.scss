@@ -1,15 +1,41 @@
-:host {
+.defaults {
+    vertical-align: middle;
+    border: 1px solid white;
+    border-radius: 10px; // Rounded corners for the square
+    background: rgba(0, 0, 0, 0.28);
+    box-sizing: border-box;
+}
+
+.socket {
     display: inline-block;
     cursor: pointer;
     width: 20px;
     height: 20px;
 
-    // Regular ports
-    &:not(.isArray) {
-        vertical-align: middle;
-        border: 1px solid white;
-        border-radius: 10px;
-        background: rgba(0, 0, 0, 0.28);
-        box-sizing: border-box;
+    &.default,
+    &.any,
+    &.string {
+        @apply defaults;
+    }
+
+    &.unknown {
+        @apply defaults;
+        border-radius: 6px;
+        transform: rotate(45deg) scale(0.75);
+        background-color: rgb(32, 32, 40);
+    }
+
+    &.number {
+        @apply defaults;
+        border-radius: 1px;
+        transform: scale(0.8);
+        background-color: rgb(65, 112, 54)
+    }
+
+    &.bool {
+        @apply defaults;
+        border-radius: 0px;
+        transform: rotate(45deg) scale(0.75);
+        background-color: rgb(142, 60, 16)
     }
 }

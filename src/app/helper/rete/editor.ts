@@ -111,85 +111,13 @@ export async function createEditor(element: HTMLElement, injector: Injector): Pr
   g_arrange.addPreset(ArrangePresets.classic.setup());
   g_area.use(g_arrange);
 
+  installPipes(g_editor);
+
   AreaExtensions.simpleNodesOrder(g_area)
   AreaExtensions.selectableNodes(g_area, AreaExtensions.selector(), { accumulating: AreaExtensions.accumulateOnCtrl() });
   AreaExtensions.snapGrid(g_area, { size: 10, dynamic: true });
   AreaExtensions.showInputControl<Schemes>(g_area, ({ hasAnyConnection }) => {
     return !hasAnyConnection;
-  })
-
-  g_editor.addPipe((context: Root<Schemes>) => {
-    const { type } = context as { type: string };
-    switch (type) {
-      case "connectioncreated": {
-        const { data } = context as { data: { id: string, source: string, sourceOutput: string } };
-
-        const node: BaseNode | undefined = editor.getNode(data.source);
-        if (node) {
-          node.addOutgoingConnection(data.sourceOutput);
-        }
-        break;
-      }
-      case "connectionremoved": {
-        const { data } = context as { data: { id: string, source: string, sourceOutput: string } };
-
-        const node: BaseNode | undefined = editor.getNode(data.source)
-        if (node) {
-          node.removeOutgoingConnection(data.sourceOutput);
-        }
-        break;
-      }
-      case "connectioncreate": {
-
-        const { data } = context as { type: string, data: BaseConnection<BaseNode, BaseNode> };
-
-        const sourceNode: BaseNode | undefined = g_editor!.getNode(data.source);
-        const targetNode: BaseNode | undefined = g_editor!.getNode(data.target);
-
-        if (sourceNode && targetNode) {
-
-          const sourceOutput: BaseOutput | undefined = sourceNode.getOutput(data.sourceOutput);
-          const targetInput: BaseInput | undefined = targetNode.getInput(data.targetInput);
-
-          if (sourceOutput && targetInput) {
-            const typeSource = sourceOutput.socket.getType();
-            const typeTarget = targetInput.socket.getType();
-
-            if (targetInput.socket.isExec()) {
-              if (sourceOutput.socket.isExec()) {
-                return context;
-              } else {
-                return undefined;
-              }
-            } else {
-              if (sourceOutput.socket.isExec()) {
-                return undefined;
-              } else if (typeSource === typeTarget || typeTarget === 'any') {
-                return context;
-              }
-
-              // support for casting types
-              switch (typeTarget) {
-                case 'bool':
-                  return typeSource === 'number' ? context : undefined;
-                case 'number':
-                  return typeSource === 'bool' ? context : undefined;
-                case 'string':
-                  return ['number', 'bool'].includes(typeSource) ? context : undefined;
-                case 'option':
-                  return ['number', 'string'].includes(typeSource) ? context : undefined;
-                case '[]bool':
-                  return typeSource === '[]number' ? context : undefined;
-                case '[]number':
-                  return typeSource === '[]bool' ? context : undefined;
-              }
-              return undefined;
-            }
-          }
-        }
-      }
-    }
-    return context;
   })
 
   return {
@@ -198,4 +126,82 @@ export async function createEditor(element: HTMLElement, injector: Injector): Pr
     arrange: g_arrange,
     connection,
   };
+}
+
+export function installPipes(editor: NodeEditor<Schemes>): void {
+  editor.addPipe((context: Root<Schemes>) => {
+    const { type } = context as { type: string };
+    switch (type) {
+      case "connectioncreated": {
+        const { data } = context as { data: { id: string, source: string, sourceOutput: string, target: string, targetInput: string } };
+
+        const sourceNode: BaseNode | undefined = editor.getNode(data.source);
+        if (sourceNode) {
+          sourceNode.addOutgoingConnection(data.sourceOutput);
+        }
+
+        break;
+      }
+      case "connectionremoved": {
+        const { data } = context as { data: { id: string, source: string, sourceOutput: string, target: string, targetInput: string } };
+
+        const sourceNode: BaseNode | undefined = editor.getNode(data.source)
+        if (sourceNode) {
+          sourceNode.removeOutgoingConnection(data.sourceOutput);
+        }
+
+        break;
+      }
+      case "connectioncreate": {
+        const { data } = context as { type: string, data: BaseConnection<BaseNode, BaseNode> };
+
+        const sourceNode: BaseNode | undefined = g_editor!.getNode(data.source);
+        const targetNode: BaseNode | undefined = g_editor!.getNode(data.target);
+        if (!sourceNode || !targetNode) {
+          return undefined;
+        }
+
+        const sourceOutput: BaseOutput | undefined = sourceNode.getOutput(data.sourceOutput);
+        const targetInput: BaseInput | undefined = targetNode.getInput(data.targetInput);
+        if (!sourceOutput || !targetInput) {
+          return undefined;
+        }
+
+        const typeSource = sourceOutput.socket.getInferredType();
+        const typeTarget = targetInput.socket.getInferredType();
+
+        if (targetInput.socket.isExec()) {
+          if (sourceOutput.socket.isExec()) {
+            return context;
+          } else {
+            return undefined;
+          }
+        } else {
+          if (sourceOutput.socket.isExec()) {
+            return undefined;
+          } else if ([typeSource, 'any', 'unknown'].includes(typeTarget) || typeSource === 'unknown') {
+            return context;
+          }
+
+          // support for casting types
+          switch (typeTarget) {
+            case 'bool':
+              return typeSource === 'number' ? context : undefined;
+            case 'number':
+              return typeSource === 'bool' ? context : undefined;
+            case 'string':
+              return ['number', 'bool'].includes(typeSource) ? context : undefined;
+            case 'option':
+              return ['number', 'string'].includes(typeSource) ? context : undefined;
+            case '[]bool':
+              return typeSource === '[]number' ? context : undefined;
+            case '[]number':
+              return typeSource === '[]bool' ? context : undefined;
+          }
+          return undefined;
+        }
+      }
+    }
+    return context;
+  })
 }
