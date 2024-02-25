@@ -40,6 +40,7 @@ export class BaseSocketComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.isArray = this.data.getInferredType().startsWith('[]');
+    this.cdr.detectChanges();
   }
 
   ngOnChanges(): void {

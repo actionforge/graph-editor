@@ -10,6 +10,13 @@ import { CdkMenu, CdkMenuItem, CdkMenuTrigger } from '@angular/cdk/menu'
 import { ClipboardModule } from '@angular/cdk/clipboard';
 
 import {
+  remixFolderOpenLine,
+  remixSave3Fill,
+  remixFileSearchFill,
+  remixBarChartGroupedFill
+} from '@ng-icons/remixicon'
+
+import {
   featherActivity,
   featherAirplay,
   featherAlertCircle,
@@ -336,10 +343,13 @@ import {
   tablerPlayerStopFilled,
   tablerVariable,
   tablerBracketsContain,
+  tablerDeviceDesktop,
   tablerWall,
+  tablerCpu,
   tablerPlusEqual,
   tablerLogicNand,
   tablerCursorText,
+  tablerArrowsJoin,
   tablerArrowsMinimize,
   tablerArrowsMaximize
 } from '@ng-icons/tabler-icons';
@@ -347,7 +357,8 @@ import {
 import {
   simpleGithub,
   simpleTwitter,
-  simpleDiscord
+  simpleDiscord,
+  simpleAmazons3
 } from '@ng-icons/simple-icons';
 
 import { ReteModule } from 'rete-angular-plugin/16';
@@ -395,6 +406,7 @@ import { environment } from 'src/environments/environment';
       simpleGithub,
       simpleTwitter,
       simpleDiscord,
+      simpleAmazons3,
 
       tablerWorld,
       tablerHome,
@@ -405,10 +417,13 @@ import { environment } from 'src/environments/environment';
       tablerPlayerPlayFilled,
       tablerPlayerPauseFilled,
       tablerWorldOff,
+      tablerDeviceDesktop,
       tablerWall,
+      tablerCpu,
       tablerPlusEqual,
       tablerLogicNand,
       tablerCursorText,
+      tablerArrowsJoin,
       tablerArrowsMinimize,
       tablerArrowsMaximize,
 
@@ -467,6 +482,12 @@ import { environment } from 'src/environments/environment';
       octStar,
       octStarFill,
       octDownload,
+
+      // Remix
+      remixFolderOpenLine,
+      remixSave3Fill,
+      remixFileSearchFill,
+      remixBarChartGroupedFill,
 
       // Feather icons (especially used for Github Actions)
       featherActivity,

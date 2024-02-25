@@ -24,6 +24,7 @@
     "@ng-icons/core": "26.3.0",
     "@ng-icons/feather-icons": "26.3.0",
     "@ng-icons/octicons": "26.3.0",
+    "@ng-icons/remixicon": "^27.1.0",
     "@ng-icons/simple-icons": "26.3.0",
     "@ng-icons/tabler-icons": "26.3.0",
     "@vscode/webview-ui-toolkit": "1.4.0",

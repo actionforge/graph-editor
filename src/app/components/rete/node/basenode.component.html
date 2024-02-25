@@ -43,7 +43,7 @@
   [class.pointer-events-none]="getPermission() === Permission.ReadOnly"
   [style.background]="getBodyBackground() | safe:'style'" [class.rounded-t-lg]="isCompact()">
 
-  <div [ngClass]="isCompact() ? 'flex flex-row justify-center items-center' : 'flex flex-col'">
+  <div [ngClass]="isCompact() ? 'flex flex-row justify-between items-center' : 'flex flex-col'">
 
     <div [ngClass]="isCompact() ? 'order-1': 'w-full order-2'">
       <!-- Inputs -->
@@ -89,7 +89,7 @@
     <div [ngClass]="isCompact() ? 'order-3': 'w-full   order-1'">
       <!-- Outputs -->
       <div *ngFor="let port of data.getOutputs() | keyvalue: sortPorts" [class.hidden]="!showOutput(port.key)"
-        class="flex flex-row justify-end items-center ml-6 mr-2 gap-x-2 my-1">
+        class="flex flex-row justify-end items-center px-2 py-1 gap-x-2">
         <span *ngIf="port.value.label as label" class="whitespace-nowrap">{{label}}</span>
 
         <ng-container *ngIf="showOutputGroupButtons(port.value)">

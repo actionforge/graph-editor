@@ -9,12 +9,12 @@ import { IGraph, INode } from 'src/app/schemas/graph';
 import { GraphService, Origin, Permission } from 'src/app/services/graph.service';
 import { NodeFactory } from 'src/app/services/nodefactory.service';
 import { Registry } from 'src/app/services/registry.service';
-import { octKey, octPlay, octTerminal } from '@ng-icons/octicons';
-import { tablerBracketsContain, tablerCursorText } from '@ng-icons/tabler-icons';
+import { octKey } from '@ng-icons/octicons';
+import { tablerArrowsJoin, tablerBracketsContain, tablerCpu, tablerCursorText, tablerDeviceDesktop } from '@ng-icons/tabler-icons';
 import { YamlService } from 'src/app/services/yaml.service';
 import { allComponents, provideVSCodeDesignSystem } from "@vscode/webview-ui-toolkit";
 import { HostAppMessage, HostService } from 'src/app/services/host.service';
-import { svgEnvGetIcon, svgEnvArray, svgArchSwitch, svgFor, svgPlatformSwitch, svgNegate, svgBoolXor, svgBoolXand, svgBoolAnd, svgBoolOr, svgBranchIcon, svgParallelFor, svgParallelExec, svgWaitFor, svgStringArray, svgHttp, svgPrint } from 'src/app/helper/icons';
+import { svgEnvGetIcon, svgEnvArray, svgFor, svgBranchIcon, svgParallelFor, svgParallelExec, svgStringArray, svgPrint, svgIterator, svgHttp } from 'src/app/helper/icons';
 import { Observable } from 'rxjs';
 import { NotificationService, NotificationType } from 'src/app/services/notification.service';
 import { getErrorMessage } from 'src/app/helper/utils';
@@ -26,7 +26,9 @@ import { BaseInput } from 'src/app/helper/rete/baseinput';
 import { BaseOutput } from 'src/app/helper/rete/baseoutput';
 import { Area2D, AreaExtensions } from 'rete-area-plugin';
 import { Transform } from 'rete-area-plugin/_types/area';
-
+import { Clipboard } from '@angular/cdk/clipboard';
+import { simpleAmazons3 } from '@ng-icons/simple-icons';
+import { remixBarChartGroupedFill, remixFileSearchFill, remixFolderOpenLine, remixSave3Fill } from '@ng-icons/remixicon';
 import { dump } from 'js-yaml';
 
 import debounce from 'lodash.debounce';
@@ -53,6 +55,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   yamlService = inject(YamlService);
   host = inject(HostService);
   cdr = inject(ChangeDetectorRef);
+  clipboard = inject(Clipboard);
 
   @ViewChild('rete') container!: ElementRef<HTMLElement>;
 
@@ -63,30 +66,32 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
   Permission = Permission;
 
+  onCopyToClipboard(_event: MouseEvent): void {
+    const graph = this.gs.serializeGraph(g_editor!, g_area!, "Dev");
+    this.clipboard.copy(graph);
+  }
+
   nodeButtonSeries = [
+    // Group for Control Flow
     [
-      {
-        type: "print@v1",
-        icon: svgPrint,
-        tooltip: "Print Stuff",
-      },
-      {
-        type: "http@v1",
-        icon: svgHttp,
-        tooltip: "Http Branch",
-      },
-    ], [
       {
         type: "branch@v1",
         icon: svgBranchIcon,
         tooltip: "Conditional Branch",
       },
-    ], [
       {
         type: "for@v1",
         icon: svgFor,
         tooltip: "For Loop",
       },
+      {
+        type: "iterator@v1",
+        icon: svgIterator,
+        tooltip: "Iterator",
+      },
+    ],
+    // Group for Multi-threading / Processing
+    [
       {
         type: "parallel-for@v1",
         icon: svgParallelFor,
@@ -98,48 +103,82 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
         tooltip: "Parallel Execution",
       },
       {
+        type: "parallel-multi-queue@v1",
+        icon: remixBarChartGroupedFill,
+        tooltip: "Parallel Multi Queue",
+      },
+      {
         type: "wait-for@v1",
-        icon: svgWaitFor,
+        icon: tablerArrowsJoin,
         tooltip: "Wait For",
       },
-    ], [
+    ],
+    // Group for File Handling
+    [
+      {
+        type: "dirwalk@v1",
+        icon: remixFileSearchFill,
+        tooltip: "Dir Walker",
+      },
+      {
+        type: "file-read@v1",
+        icon: remixFolderOpenLine,
+        tooltip: "Read File",
+      },
+      {
+        type: "file-write@v1",
+        icon: remixSave3Fill,
+        tooltip: "Write File",
+      },
+    ],
+    // Group for Internet Access
+    [
+      {
+        type: "http@v1",
+        icon: svgHttp,
+        tooltip: "Http Branch",
+      },
+      {
+        type: "aws-s3-upload@v1",
+        icon: simpleAmazons3,
+        tooltip: "AWS S3 Upload",
+      },
+    ],
+    // Group for String and File Path Operations
+    [
+      {
+        type: "string-match@v1",
+        icon: featherSearch,
+        tooltip: "String Match",
+      },
+      {
+        type: "string-fmt@v1",
+        icon: tablerCursorText,
+        tooltip: "String Format",
+      },
+      {
+        type: "filepath-op@v1",
+        icon: tablerBracketsContain,
+        tooltip: "Filepath Operations",
+      },
+      {
+        type: "filepath-join@v1",
+        icon: tablerBracketsContain,
+        tooltip: "Filepath Join",
+      },
+    ],
+    // Group for Basic Operations and Utilities
+    [
       {
         type: "switch-platform@v1",
-        icon: svgPlatformSwitch,
+        icon: tablerDeviceDesktop,
         tooltip: "Platform Switch",
       },
       {
         type: "switch-arch@v1",
-        icon: svgArchSwitch,
+        icon: tablerCpu,
         tooltip: "Architecture Switch",
       },
-    ], [
-      {
-        type: "bool-and@v1",
-        icon: svgBoolAnd,
-        tooltip: "Bool AND",
-      },
-      {
-        type: "bool-or@v1",
-        icon: svgBoolOr,
-        tooltip: "Bool OR",
-      },
-      {
-        type: "bool-xand@v1",
-        icon: svgBoolXand,
-        tooltip: "Bool XAND",
-      },
-      {
-        type: "bool-xor@v1",
-        icon: svgBoolXor,
-        tooltip: "Bool XOR",
-      },
-      {
-        type: "negate@v1",
-        icon: svgNegate,
-        tooltip: "Negate",
-      }
-    ], [
       {
         type: "string-array@v1",
         icon: svgStringArray,
@@ -160,33 +199,15 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
         icon: octKey,
         tooltip: "Github Secret",
       },
-    ], [
       {
-        type: "run@v1",
-        icon: octTerminal,
-        tooltip: "Run",
+        type: "print@v1",
+        icon: svgPrint,
+        tooltip: "Print Stuff",
       },
-      {
-        type: "run-exec@v1",
-        icon: octPlay,
-        tooltip: "Run Executable",
-      }
-    ], [
-      {
-        type: "string-match@v1",
-        icon: featherSearch,
-        tooltip: "String Match",
-      }, {
-        type: "string-op@v1",
-        icon: tablerBracketsContain,
-        tooltip: "String Operations",
-      }, {
-        type: "string-fmt@v1",
-        icon: tablerCursorText,
-        tooltip: "String Format",
-      }
-    ]
-  ]
+    ],
+  ];
+
+
 
   githubGraph = false;
 
@@ -350,8 +371,6 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     await Promise.all(createConnections);
   }
 
-
-
   async ngAfterViewInit(): Promise<void> {
 
     const { editor, area, connection } = await createEditor(this.container.nativeElement, this.injector);
@@ -471,37 +490,56 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     } else if (environment.web) {
 
       const foo = `entry: start
-executions:
-  - src:
-      node: start
-      port: exec
-    dst:
-      node: print-v1-kiwi-dog-apple
-      port: exec
+executions: []
 connections:
   - src:
-      node: start
-      port: env
+      node: bool-and-v1-brown-panda-pineapple
+      port: result
     dst:
-      node: print-v1-kiwi-dog-apple
-      port: value
+      node: node-1
+      port: context
+  - src:
+      node: node-1
+      port: context
+    dst:
+      node: for-v1-butterfly-cat-yellow
+      port: first_index
 nodes:
   - id: start
     type: start@v1
     position:
-      x: 0
-      y: -0.0
+      x: -940
+      y: -440
     settings:
       folded: false
-  - id: print-v1-kiwi-dog-apple
-    type: print@v1
+  - id: node-1
+    type: parallel-multi-queue@v1
     position:
-      x: 0
-      y: -0.0
+      x: -590
+      y: -500
+    inputs:
+      worker_count: 8
+    settings:
+      folded: false
+  - id: for-v1-butterfly-cat-yellow
+    type: for@v1
+    position:
+      x: 50
+      y: -530
+    settings:
+      folded: false
+  - id: bool-and-v1-brown-panda-pineapple
+    type: bool-and@v1
+    position:
+      x: -950
+      y: -260
+    inputs:
+      input[0]: null
+      input[1]: null
     settings:
       folded: false
 registries: []
-description: ''
+description: Dev          
 `
       await this.openGraph(location.pathname, foo, null);
 
