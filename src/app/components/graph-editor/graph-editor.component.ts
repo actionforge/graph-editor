@@ -143,6 +143,11 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
         icon: simpleAmazons3,
         tooltip: "AWS S3 Upload",
       },
+      {
+        type: "aws-s3-list@v1",
+        icon: simpleAmazons3,
+        tooltip: "AWS S3 List",
+      },
     ],
     // Group for String and File Path Operations
     [
@@ -155,6 +160,11 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
         type: "string-fmt@v1",
         icon: tablerCursorText,
         tooltip: "String Format",
+      },
+      {
+        type: "string-array@v1",
+        icon: svgStringArray,
+        tooltip: "String Array",
       },
       {
         type: "filepath-op@v1",
@@ -178,11 +188,6 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
         type: "switch-arch@v1",
         icon: tablerCpu,
         tooltip: "Architecture Switch",
-      },
-      {
-        type: "string-array@v1",
-        icon: svgStringArray,
-        tooltip: "String Array",
       },
       {
         type: "env-get@v1",
@@ -579,7 +584,7 @@ description: Dev
   }
 
   async fitToCanvas(): Promise<void> {
-    return new Promise((resolve) => {
+    await new Promise((resolve) => {
       setTimeout(() => {
         if (!g_editor) {
           throw new Error('editor not initialized');
@@ -590,5 +595,8 @@ description: Dev
           .then(resolve)
       }, 0);
     })
+
+    const graph = this.gs.serializeGraph(g_editor!, g_area!, '');
+    void this.host.postMessage({ type: 'saveGraph', data: graph });
   }
 }
