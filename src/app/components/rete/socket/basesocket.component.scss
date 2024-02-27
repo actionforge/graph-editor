@@ -1,41 +1,20 @@
-.defaults {
+.port-label {
+    color: white;
+    font-weight: 100;
+    background-color: rgba(0, 0, 0, 0.60);
+    border-radius: 5px;
+    color: rgb(149, 175, 206);
+    padding: 3px
+}
+
+.circle {
     vertical-align: middle;
     border: 1px solid white;
     border-radius: 10px; // Rounded corners for the square
     background: rgba(0, 0, 0, 0.28);
     box-sizing: border-box;
-}
-
-.socket {
     display: inline-block;
     cursor: pointer;
     width: 20px;
     height: 20px;
-
-    &.default,
-    &.any,
-    &.string {
-        @apply defaults;
-    }
-
-    &.unknown {
-        @apply defaults;
-        border-radius: 6px;
-        transform: rotate(45deg) scale(0.75);
-        background-color: rgb(32, 32, 40);
-    }
-
-    &.number {
-        @apply defaults;
-        border-radius: 1px;
-        transform: scale(0.8);
-        background-color: rgb(65, 112, 54)
-    }
-
-    &.bool {
-        @apply defaults;
-        border-radius: 0px;
-        transform: rotate(45deg) scale(0.75);
-        background-color: rgb(142, 60, 16)
-    }
 }

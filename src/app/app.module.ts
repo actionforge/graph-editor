@@ -13,7 +13,8 @@ import {
   remixFolderOpenLine,
   remixSave3Fill,
   remixFileSearchFill,
-  remixBarChartGroupedFill
+  remixBarChartGroupedFill,
+  remixArrowRightLine
 } from '@ng-icons/remixicon'
 
 import {
@@ -488,6 +489,7 @@ import { environment } from 'src/environments/environment';
       remixSave3Fill,
       remixFileSearchFill,
       remixBarChartGroupedFill,
+      remixArrowRightLine,
 
       // Feather icons (especially used for Github Actions)
       featherActivity,
