@@ -266,17 +266,11 @@ export class GraphService {
   }
 
   async deleteNode(nodeId: string): Promise<void> {
-    // First remove all connections of the node
-    // and identify their associcated nodes as
-    // they might need to be updated as well,
-    // since a connection got taken away from them.
-    const promisesConns = [];
-
     const associcatedNodes = new Set<string>();
 
     for (const conn of g_editor!.getConnections()) {
       if (conn.source === nodeId || conn.target === nodeId) {
-        promisesConns.push(g_editor!.removeConnection(conn.id));
+        await g_editor!.removeConnection(conn.id);
         if (conn.source === nodeId) {
           associcatedNodes.add(conn.target);
         } else {
@@ -286,14 +280,11 @@ export class GraphService {
     }
 
     await g_editor!.removeNode(nodeId);
-    await Promise.all(promisesConns);
 
     const promisesNodes = [];
-
     for (const subNodeId of associcatedNodes) {
       promisesNodes.push(g_area!.update("node", subNodeId));
     }
-
     await Promise.all(promisesNodes);
   }
 
