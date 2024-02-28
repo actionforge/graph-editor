@@ -11,7 +11,7 @@ import { MatTooltip } from "@angular/material/tooltip";
 import { BaseSocket } from "src/app/helper/rete/basesocket";
 
 const typeToClassMap = new Map<string, string>([
-  ["number", "num"],
+  ["number", "123"],
   ["bool", "bool"],
   ["string", "str"],
   ["unknown", "unknown"],
@@ -58,7 +58,7 @@ export class BaseSocketComponent implements OnInit, OnChanges {
 
   @HostListener('mouseenter') onMouseEnter(): void {
     const type = this.data.getInferredType();
-    this.tooltip.message = type === "unknown" ? "Type Forwarding" : this.data.name;
+    this.tooltip.message = type === "unknown" ? "Type Forwarding" : type;
     this.tooltip.show();
   }
 
