@@ -9,12 +9,12 @@ import { IGraph, INode } from 'src/app/schemas/graph';
 import { GraphService, Origin, Permission } from 'src/app/services/graph.service';
 import { NodeFactory } from 'src/app/services/nodefactory.service';
 import { Registry } from 'src/app/services/registry.service';
-import { octKey } from '@ng-icons/octicons';
+import { octKey, octPlay, octTerminal } from '@ng-icons/octicons';
 import { tablerArrowsJoin, tablerBracketsContain, tablerCpu, tablerCursorText, tablerDeviceDesktop } from '@ng-icons/tabler-icons';
 import { YamlService } from 'src/app/services/yaml.service';
 import { allComponents, provideVSCodeDesignSystem } from "@vscode/webview-ui-toolkit";
 import { HostAppMessage, HostService } from 'src/app/services/host.service';
-import { svgEnvGetIcon, svgEnvArray, svgFor, svgBranchIcon, svgParallelFor, svgParallelExec, svgStringArray, svgPrint, svgIterator, svgHttp } from 'src/app/helper/icons';
+import { svgEnvGetIcon, svgEnvArray, svgFor, svgBranchIcon, svgParallelFor, svgParallelExec, svgStringArray, svgPrint, svgIterator, svgHttp, svgBoolAnd, svgBoolOr, svgBoolXand, svgBoolXor, svgNegate } from 'src/app/helper/icons';
 import { Observable } from 'rxjs';
 import { NotificationService, NotificationType } from 'src/app/services/notification.service';
 import { getErrorMessage } from 'src/app/helper/utils';
@@ -148,6 +148,45 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
         icon: simpleAmazons3,
         tooltip: "AWS S3 List",
       },
+    ], [
+      {
+        type: "run@v1",
+        icon: octTerminal,
+        tooltip: "Run",
+      },
+      {
+        type: "run-exec@v1",
+        icon: octPlay,
+        tooltip: "Run Executable",
+      }
+    ],
+    // Boolean operators
+    [
+      {
+        type: "bool-and@v1",
+        icon: svgBoolAnd,
+        tooltip: "Bool AND",
+      },
+      {
+        type: "bool-or@v1",
+        icon: svgBoolOr,
+        tooltip: "Bool OR",
+      },
+      {
+        type: "bool-xand@v1",
+        icon: svgBoolXand,
+        tooltip: "Bool XAND",
+      },
+      {
+        type: "bool-xor@v1",
+        icon: svgBoolXor,
+        tooltip: "Bool XOR",
+      },
+      {
+        type: "negate@v1",
+        icon: svgNegate,
+        tooltip: "Negate",
+      }
     ],
     // Group for String and File Path Operations
     [
@@ -351,7 +390,6 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
         if (srcSocket !== undefined && dstSocket !== undefined) {
           const c = new BaseConnection(sourceNode, srcSocket.socket as BaseSocket, targetNode, dstSocket.socket as BaseSocket);
           createConnections.push(g_editor.addConnection(c))
-
         }
       }
     }
@@ -495,56 +533,99 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     } else if (environment.web) {
 
       const foo = `entry: start
-executions: []
+executions:
+  - src:
+      node: file-read-v1-lion-gray-strawberry
+      port: exec
+    dst:
+      node: aws-s3-upload-v1-grape-parrot-parrot
+      port: exec
+  - src:
+      node: start
+      port: exec
+    dst:
+      node: dirwalk-v1-octopus-blue-purple
+      port: exec
+  - src:
+      node: dirwalk-v1-octopus-blue-purple
+      port: exec
+    dst:
+      node: iterator-v1-cranberry-blue-red
+      port: exec
+  - src:
+      node: iterator-v1-cranberry-blue-red
+      port: exec
+    dst:
+      node: file-read-v1-lion-gray-strawberry
+      port: exec
 connections:
   - src:
-      node: bool-and-v1-brown-panda-pineapple
-      port: result
+      node: file-read-v1-lion-gray-strawberry
+      port: file
     dst:
-      node: node-1
-      port: context
+      node: aws-s3-upload-v1-grape-parrot-parrot
+      port: content
   - src:
-      node: node-1
-      port: context
+      node: iterator-v1-cranberry-blue-red
+      port: value
     dst:
-      node: for-v1-butterfly-cat-yellow
-      port: first_index
+      node: aws-s3-upload-v1-grape-parrot-parrot
+      port: name
+  - src:
+      node: dirwalk-v1-octopus-blue-purple
+      port: items
+    dst:
+      node: iterator-v1-cranberry-blue-red
+      port: array
+  - src:
+      node: iterator-v1-cranberry-blue-red
+      port: value
+    dst:
+      node: file-read-v1-lion-gray-strawberry
+      port: path
 nodes:
   - id: start
     type: start@v1
     position:
-      x: -940
-      y: -440
+      x: -600
+      y: -10
     settings:
       folded: false
-  - id: node-1
-    type: parallel-multi-queue@v1
+  - id: dirwalk-v1-octopus-blue-purple
+    type: dirwalk@v1
     position:
-      x: -590
-      y: -500
+      x: -220
+      y: -100
     inputs:
-      worker_count: 8
+      dir: /Users/sebastian/Desktop/test-actiongraph
     settings:
       folded: false
-  - id: for-v1-butterfly-cat-yellow
-    type: for@v1
+  - id: file-read-v1-lion-gray-strawberry
+    type: file-read@v1
     position:
-      x: 50
-      y: -530
+      x: 500
+      y: -320
     settings:
       folded: false
-  - id: bool-and-v1-brown-panda-pineapple
-    type: bool-and@v1
+  - id: aws-s3-upload-v1-grape-parrot-parrot
+    type: aws-s3-upload@v1
     position:
-      x: -950
-      y: -260
+      x: 800
+      y: -240
     inputs:
-      input[0]: null
-      input[1]: null
+      bucket: actionforge
+    settings:
+      folded: false
+  - id: iterator-v1-cranberry-blue-red
+    type: iterator@v1
+    position:
+      x: 140
+      y: -180
     settings:
       folded: false
 registries: []
-description: Dev          
+description: ''
+              
 `
       await this.openGraph(location.pathname, foo, null);
 

@@ -1,20 +1,47 @@
 .port-label {
-    color: white;
     font-weight: 100;
     background-color: rgba(0, 0, 0, 0.60);
     border-radius: 5px;
+    padding: 3px;
     color: rgb(149, 175, 206);
-    padding: 3px
-}
 
-.circle {
-    vertical-align: middle;
-    border: 1px solid white;
-    border-radius: 10px; // Rounded corners for the square
-    background: rgba(0, 0, 0, 0.28);
-    box-sizing: border-box;
-    display: inline-block;
-    cursor: pointer;
-    width: 20px;
-    height: 20px;
+    &.opt {
+        color: cadetblue;
+    }
+
+    &.bool {
+        color: forestgreen;
+
+        &.array {
+            color: darkseagreen;
+
+            &:after {
+                content: "[]";
+            }
+        }
+    }
+
+    &.number {
+        color: dodgerblue;
+
+        &.array {
+            color: darkturquoise;
+
+            &:after {
+                content: "[]";
+            }
+        }
+    }
+
+    &.string {
+        color: orange;
+
+        &.array {
+            color: burlywood;
+
+            &:after {
+                content: "[]";
+            }
+        }
+    }
 }

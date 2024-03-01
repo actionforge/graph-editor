@@ -10,12 +10,28 @@ import {
 import { MatTooltip } from "@angular/material/tooltip";
 import { BaseSocket } from "src/app/helper/rete/basesocket";
 
-const typeToClassMap = new Map<string, string>([
-  ["number", "123"],
+const typeToPortLabel = new Map<string, string>([
   ["bool", "bool"],
+  ["number", "num"],
   ["string", "str"],
+  ["option", "opt"],
+  ["[]string", "str"],
+  ["[]number", "num"],
+  ["[]bool", "bool"],
   ["unknown", "unknown"],
-  ["any", "[*]"],
+  ["any", "any"],
+]);
+
+const typeToClassMap = new Map<string, string>([
+  ["bool", "bool"],
+  ["number", "number"],
+  ["string", "string"],
+  ["option", "option"],
+  ["[]string", "string array"],
+  ["[]number", "number array"],
+  ["[]bool", "bool array"],
+  ["unknown", "unknown"],
+  ["any", "any"],
 ]);
 
 @Component({
@@ -31,14 +47,20 @@ export class BaseSocketComponent implements OnInit, OnChanges {
   @Input() data!: BaseSocket;
   @Input() rendered!: () => void;
 
-  isArray = false;
+  portClass = "";
 
   constructor() {
     this.cdr.detach();
   }
 
   ngOnInit(): void {
-    this.isArray = this.data.getInferredType().startsWith('[]');
+    const isArray = this.data.getInferredType().startsWith('[]');
+    let inferedBaseType = this.data.getInferredType();
+    if (isArray) {
+      inferedBaseType = inferedBaseType.replace('[]', '');
+    }
+    this.portClass = `${inferedBaseType} ${isArray ? "array" : ""}`;
+
     this.cdr.detectChanges();
   }
 
@@ -47,13 +69,13 @@ export class BaseSocketComponent implements OnInit, OnChanges {
     requestAnimationFrame(() => this.rendered());
   }
 
-  getSocketClass(): string {
-    if (this.isArray) {
-      return "array";
-    } else {
-      const type = this.data.getInferredType();
-      return typeToClassMap.get(type) ?? "generic";
-    }
+  getPortClass(): string {
+    return this.portClass;
+  }
+
+  getPortLabel(): string {
+    const type = this.data.getInferredType();
+    return typeToPortLabel.get(type) ?? "default";
   }
 
   @HostListener('mouseenter') onMouseEnter(): void {

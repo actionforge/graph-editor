@@ -10,6 +10,7 @@
 
    <!-- Node Toolbar-->
    <div class="relative" *ngIf="(getPermission() | async) === Permission.Writable">
+      <!--<vscode-button class="secondary" (click)="onCopyToClipboard($event)">Copy to Clipboard</vscode-button>-->
       <div
          class="absolute z-[500] left-4 top-4 flex flex-col text-gray-700 dark:text-white fill-gray-700 dark:fill-white">
 
