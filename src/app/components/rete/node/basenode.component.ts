@@ -17,6 +17,7 @@ import { g_area, g_editor } from "src/app/helper/rete/editor";
 import { GraphService, Permission } from "src/app/services/graph.service";
 import { NodeFactory } from "src/app/services/nodefactory.service";
 import { Registry } from "src/app/services/registry.service";
+import { ReteService } from "src/app/services/rete.service";
 
 const DEFAULT_HEADER_COLOR = 'linear-gradient(to right, rgb(34, 118, 197), rgb(21, 67, 128))'
 const DEFAULT_BODY_COLOR = 'linear-gradient(to right, rgb(50, 120, 200), rgb(10, 50, 128))'
@@ -57,6 +58,7 @@ export class BaseNodeComponent implements OnChanges {
   gs = inject(GraphService);
   nf = inject(NodeFactory);
   nr = inject(Registry);
+  rs = inject(ReteService);
 
   @_Input() data!: BaseNode;
   @_Input() emit!: (data: unknown) => void;

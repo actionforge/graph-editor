@@ -30,6 +30,7 @@ import { Clipboard } from '@angular/cdk/clipboard';
 import { simpleAmazons3 } from '@ng-icons/simple-icons';
 import { remixBarChartGroupedFill, remixFileSearchFill, remixFolderOpenLine, remixSave3Fill } from '@ng-icons/remixicon';
 import { dump } from 'js-yaml';
+import { ReteService } from 'src/app/services/rete.service';
 
 import debounce from 'lodash.debounce';
 
@@ -56,6 +57,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   host = inject(HostService);
   cdr = inject(ChangeDetectorRef);
   clipboard = inject(Clipboard);
+  rs = inject(ReteService);
 
   @ViewChild('rete') container!: ElementRef<HTMLElement>;
 

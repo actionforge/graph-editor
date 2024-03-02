@@ -11,6 +11,7 @@ import { environment } from 'src/environments/environment';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { g_area, g_editor } from 'src/app/helper/rete/editor';
 import { HostService as HostService } from 'src/app/services/host.service';
+import { ReteService } from 'src/app/services/rete.service';
 
 provideVSCodeDesignSystem().register(vsCodeButton());
 
@@ -26,6 +27,7 @@ export class SidebarComponent {
   gs = inject(GraphService);
   clipboard = inject(Clipboard);
   injector = inject(Injector);
+  rs = inject(ReteService);
 
   nodeUrl = "";
 

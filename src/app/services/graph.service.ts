@@ -13,6 +13,7 @@ import { HostService } from './host.service';
 import { Registry } from './registry.service';
 
 import AsyncLock from 'async-lock';
+import { ReteService } from './rete.service';
 
 export interface Origin {
   owner: string;
@@ -36,6 +37,7 @@ export class GraphService {
   nf = inject(NodeFactory);
   injector = inject(Injector);
   vscode = inject(HostService);
+  rs = inject(ReteService);
 
   loadingLock = new AsyncLock();
 
