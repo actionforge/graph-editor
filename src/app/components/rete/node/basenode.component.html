@@ -5,6 +5,11 @@
     matTooltipPosition="above"
     class="pointer-events-auto cursor-pointer text-sm text-gray-300 dark:text-white hover:text-blue-500 hover:dark:text-blue-500"></ng-icon>
 
+  <!-- Open SubGraph icon-->
+  <ng-icon *ngIf="data.getDefinition().id.startsWith('subgraph@')" name="featherBookOpen" size="18"
+    matTooltipPosition="above" (pointerdown)="onOpenSubGraph($event)"
+    class="pointer-events-auto cursor-pointer text-sm text-gray-300 dark:text-white hover:text-blue-500 hover:dark:text-blue-500"></ng-icon>
+
   <!-- Delete Node Button-->
   <ng-icon *ngIf="!data.getDefinition().entry" (pointerdown)="onDeleteNode($event)" name="octTrash" size="18"
     title="Delete Node" matTooltipPosition="above"

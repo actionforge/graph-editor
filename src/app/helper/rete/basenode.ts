@@ -262,6 +262,12 @@ export class BaseNode extends ClassicPreset.Node {
   }
 }
 
+export class SubGraphNode extends BaseNode {
+  constructor(id: string, type: string, name: string, definition: INodeTypeDefinitionFull) {
+    super(id, type, name, definition);
+  }
+}
+
 function getHighestSubPortIndex(prefix: string, portIds: string[]): number {
   let largestIndex = -1;
   const r = new RegExp(`^(${prefix})\\[([0-9]+)\\]$`);

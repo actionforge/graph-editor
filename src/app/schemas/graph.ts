@@ -3,7 +3,7 @@
 export interface IGraph {
     description: string;
     entry: string;
-    nodes: INode[];
+    nodes: (INode | (INode & IGraph))[];
     connections: IConnection[];
     executions: IExecution[];
     registries: string[];

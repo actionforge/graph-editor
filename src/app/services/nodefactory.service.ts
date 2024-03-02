@@ -1,5 +1,5 @@
 import { Injectable, Injector, inject } from "@angular/core";
-import { BaseNode } from "../helper/rete/basenode";
+import { BaseNode, SubGraphNode } from "../helper/rete/basenode";
 import { IInputDefinition, INodeTypeDefinitionFull, IOutputDefinition } from "../helper/rete/interfaces/nodes";
 import { Registry } from "./registry.service";
 import { IInput, IOutput } from "../schemas/graph";
@@ -40,7 +40,12 @@ export class NodeFactory {
             }
         }
 
-        const n = new BaseNode(id, nodeDef.id, displayName, nodeDef);
+        let n: BaseNode;
+        if (nodeDef.id.startsWith("subgraph@")) {
+            n = new SubGraphNode(id, type, displayName, nodeDef);
+        } else {
+            n = new BaseNode(id, type, displayName, nodeDef);
+        }
 
         if (nodeDef.inputs !== undefined) {
             const inputDefs = new Map<string, IInputDefinition>();

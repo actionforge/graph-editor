@@ -1,6 +1,6 @@
 import { Injectable, Injector, inject } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
-import { BaseNode } from '../helper/rete/basenode';
+import { BaseNode, SubGraphNode } from '../helper/rete/basenode';
 import { dump, load } from 'js-yaml';
 import { NodeFactory } from './nodefactory.service';
 import { generateRandomWord } from '../helper/wordlist';
@@ -142,7 +142,7 @@ export class GraphService {
       throw new Error('Entry not set');
     }
 
-    const nodes: INode[] = [];
+    const nodes: (INode | (INode & IGraph))[] = [];
     const connections: IConnection[] = [];
     const executions: IExecution[] = [];
 
@@ -183,14 +183,28 @@ export class GraphService {
       }
 
       const view: NodeView | undefined = area.nodeViews.get(node.id);
-      nodes.push({
-        id: node.id,
-        type: node.getType(),
-        position: view?.position || { x: 0, y: 0 },
-        inputs: Object.values(inputs).length > 0 ? inputs : undefined,
-        outputs: Object.values(outputs).length > 0 ? outputs : undefined,
-        settings: Object.values(node.getSettings()).length > 0 ? node.getSettings() : undefined
-      });
+      if (node instanceof SubGraphNode) {
+        nodes.push({
+          id: node.id,
+          type: node.getType(),
+          position: view?.position || { x: 0, y: 0 },
+          inputs: Object.values(inputs).length > 0 ? inputs : undefined,
+          outputs: Object.values(outputs).length > 0 ? outputs : undefined,
+          settings: Object.values(node.getSettings()).length > 0 ? node.getSettings() : undefined,
+          ... {
+            entry: "123"
+          }
+        });
+      } else {
+        nodes.push({
+          id: node.id,
+          type: node.getType(),
+          position: view?.position || { x: 0, y: 0 },
+          inputs: Object.values(inputs).length > 0 ? inputs : undefined,
+          outputs: Object.values(outputs).length > 0 ? outputs : undefined,
+          settings: Object.values(node.getSettings()).length > 0 ? node.getSettings() : undefined
+        });
+      }
     }
 
     for (const connection of editor.getConnections()) {

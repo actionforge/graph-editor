@@ -7,6 +7,7 @@ import {
   inject,
   HostListener,
 } from "@angular/core";
+import { featherBookOpen } from "@ng-icons/feather-icons";
 import { getGhActionIcon } from "src/app/helper/gh-icons";
 import { BaseControl, BaseControlType } from "src/app/helper/rete/basecontrol";
 import { BaseInput } from "src/app/helper/rete/baseinput";
@@ -61,6 +62,8 @@ export class BaseNodeComponent implements OnChanges {
   @_Input() emit!: (data: unknown) => void;
   @_Input() rendered!: () => void;
 
+  featherBookOpen = featherBookOpen;
+
   seed = 0;
   mouseover = false;
 
@@ -96,6 +99,11 @@ export class BaseNodeComponent implements OnChanges {
     event.preventDefault();
 
     await this.gs.deleteNode(this.data.id);
+  }
+
+  async onOpenSubGraph(event: MouseEvent): Promise<void> {
+    event.stopPropagation();
+    event.preventDefault();
   }
 
   async onAppendOutputValue(event: MouseEvent, output: BaseOutput): Promise<void> {
