@@ -16,21 +16,21 @@ export class ReteService {
 
     getEditor(): NodeEditor<Schemes> {
         if (this.g_editor === null) {
-            throw new Error('Editor not initialized');
+            throw new Error('editor not initialized');
         }
         return this.g_editor;
     }
 
     getArea(): AreaPlugin<Schemes, AreaExtra> {
         if (this.g_area === null) {
-            throw new Error('Area not initialized');
+            throw new Error('area not initialized');
         }
         return this.g_area;
     }
 
     getArrange(): AutoArrangePlugin<Schemes, never> {
         if (this.g_arrange === null) {
-            throw new Error('Arrange not initialized');
+            throw new Error('arrange not initialized');
         }
         return this.g_arrange;
     }
