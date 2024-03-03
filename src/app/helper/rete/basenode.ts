@@ -1,7 +1,7 @@
 import { ClassicPreset } from "rete";
 import { BaseSocket } from "./basesocket";
 import { IInputDefinition, INodeTypeDefinitionFull, IOutputDefinition } from "./interfaces/nodes";
-import { IInput, ISettings } from "src/app/schemas/graph";
+import { IInput, ISettings, ISubGraph } from "src/app/schemas/graph";
 import { BaseControl, BaseControlType } from "./basecontrol";
 import { BaseInput } from "./baseinput";
 import { BaseOutput } from "./baseoutput";
@@ -263,9 +263,16 @@ export class BaseNode extends ClassicPreset.Node {
 }
 
 export class SubGraphNode extends BaseNode {
-  constructor(id: string, type: string, name: string, definition: INodeTypeDefinitionFull) {
+  constructor(id: string, type: string, name: string, definition: INodeTypeDefinitionFull, graph: ISubGraph) {
     super(id, type, name, definition);
+    this.graph = graph;
   }
+
+  getGraph(): ISubGraph {
+    return this.graph;
+  }
+
+  private graph: ISubGraph;
 }
 
 function getHighestSubPortIndex(prefix: string, portIds: string[]): number {

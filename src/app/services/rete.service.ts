@@ -9,6 +9,11 @@ import { BaseSocket } from "../helper/rete/basesocket";
 import { BaseSocketComponent } from "../components/rete/socket/basesocket.component";
 import { BaseControlComponent } from "../components/basecontrol/basecontrol.component";
 import { AreaExtensions, AreaPlugin } from 'rete-area-plugin';
+import { BaseNode, SubGraphNode } from "../helper/rete/basenode";
+import { BaseConnection } from "../helper/rete/baseconnection";
+import { BaseOutput } from "../helper/rete/baseoutput";
+import { BaseInput } from "../helper/rete/baseinput";
+import { Subject } from "rxjs";
 
 import {
     ConnectionPlugin,
@@ -25,11 +30,7 @@ import {
     AutoArrangePlugin,
     Presets as ArrangePresets,
 } from 'rete-auto-arrange-plugin';
-import { BaseNode } from "../helper/rete/basenode";
-import { BaseConnection } from "../helper/rete/baseconnection";
-import { BaseOutput } from "../helper/rete/baseoutput";
-import { BaseInput } from "../helper/rete/baseinput";
-import { Subject } from "rxjs";
+import { ISubGraph } from "../schemas/graph";
 
 export type Conn = BaseConnection<BaseNode, BaseNode>;
 export type Schemes = GetSchemes<BaseNode, Conn>;
@@ -48,11 +49,17 @@ export class ReteService {
     private comps = new Map<string, ReteComponents>();
     private injector = inject(Injector);
 
-    private $subgraphOpen = new Subject<string | null>();
+    private $subgraphOpen = new Subject<{
+        node: SubGraphNode,
+        subgraph: ISubGraph
+    }>();
     subgraphOpenObservable = this.$subgraphOpen.asObservable();
 
-    openSubGraph(subgraph: string): void {
-        this.$subgraphOpen.next(subgraph);
+    openSubGraph(node: SubGraphNode, subgraph: ISubGraph): void {
+        this.$subgraphOpen.next({
+            node,
+            subgraph,
+        });
     }
 
     createEditor(element: HTMLElement, subgraph?: string | null): {

@@ -10,6 +10,15 @@ export interface IGraph {
     registries: string[];
 }
 
+export type ISubGraph = IGraph & {
+    outputs: {
+        [key: string]: IOutputDefinition;
+    },
+    inputs: {
+        [key: string]: IInputDefinition;
+    }
+}
+
 export type IInput = unknown | string[] | number[] | boolean[] | string | number | boolean;
 export type IOutput = string | null;
 
@@ -30,7 +39,7 @@ export type ISettings = {
 export interface INode {
     id: string;
     type: string;
-    definition?: {
+    graph?: IGraph & {
         outputs: {
             [key: string]: IOutputDefinition;
         };

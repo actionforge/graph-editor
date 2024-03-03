@@ -11,7 +11,7 @@ import { featherBookOpen } from "@ng-icons/feather-icons";
 import { getGhActionIcon } from "src/app/helper/gh-icons";
 import { BaseControl, BaseControlType } from "src/app/helper/rete/basecontrol";
 import { BaseInput } from "src/app/helper/rete/baseinput";
-import { BaseNode } from "src/app/helper/rete/basenode";
+import { BaseNode, SubGraphNode } from "src/app/helper/rete/basenode";
 import { BaseOutput } from "src/app/helper/rete/baseoutput";
 import { GraphService, Permission } from "src/app/services/graph.service";
 import { NodeFactory } from "src/app/services/nodefactory.service";
@@ -106,7 +106,9 @@ export class BaseNodeComponent implements OnChanges {
     event.stopPropagation();
     event.preventDefault();
 
-    this.rs.openSubGraph(this.data.id);
+    if (this.data instanceof SubGraphNode) {
+      this.rs.openSubGraph(this.data, this.data.getGraph());
+    }
   }
 
   async onAppendOutputValue(event: MouseEvent, output: BaseOutput): Promise<void> {

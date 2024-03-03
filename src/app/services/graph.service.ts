@@ -4,14 +4,13 @@ import { BaseNode, SubGraphNode } from '../helper/rete/basenode';
 import { dump, load } from 'js-yaml';
 import { NodeFactory } from './nodefactory.service';
 import { generateRandomWord } from '../helper/wordlist';
-import { IConnection, IExecution, IGraph, IInput, IOutput, INode } from '../schemas/graph';
+import { IConnection, IExecution, IGraph, IInput, IOutput, INode, ISubGraph } from '../schemas/graph';
 import { NodeEditor } from 'rete';
 import { AreaPlugin, NodeView } from 'rete-area-plugin';
 import { parseRegistryUri } from '../helper/utils';
 import { HostService } from './host.service';
 import { Registry } from './registry.service';
 import { AreaExtra, ReteService, Schemes } from './rete.service';
-import { IInputDefinition, IOutputDefinition } from '../helper/rete/interfaces/nodes';
 
 import AsyncLock from 'async-lock';
 
@@ -268,10 +267,9 @@ export class GraphService {
   async createNode(nodeTypeId: string, args: {
     nodeId: string | null,
     userCreated: boolean,
-    inputs?: { [key: string]: IInputDefinition },
-    outputs?: { [key: string]: IOutputDefinition },
     inputValues?: { [key: string]: IInput },
     outputValues?: { [key: string]: IOutput },
+    graph?: ISubGraph,
   }): Promise<BaseNode> {
     const sanitizedNodeId = nodeTypeId.replace(/[^a-zA-Z0-9-]/g, '-').replace(/^github.com-/, 'gh-');
 
@@ -279,13 +277,13 @@ export class GraphService {
       args.nodeId = `${sanitizedNodeId}-${generateRandomWord(3)}`
     }
 
-    const node: BaseNode = await this.nf.createNode(args.nodeId,
-      nodeTypeId,
-      this.inputChangeEvent,
-      args.inputs,
-      args.outputs,
-      args.inputValues,
-      args.outputValues);
+    const node: BaseNode = await this.nf.createNode(args.nodeId, {
+      type: nodeTypeId,
+      inputChangeEvent: this.inputChangeEvent,
+      inputValues: args.inputValues,
+      outputValues: args.outputValues,
+      graph: args.graph,
+    });
 
     await this.rs.getEditor().addNode(node);
 

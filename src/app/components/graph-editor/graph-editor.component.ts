@@ -2,9 +2,9 @@ import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Injector, OnDe
 import { Root } from 'rete';
 import { Output, Socket } from 'rete/_types/presets/classic';
 import { BaseConnection } from 'src/app/helper/rete/baseconnection';
-import { BaseNode } from 'src/app/helper/rete/basenode';
+import { BaseNode, SubGraphNode } from 'src/app/helper/rete/basenode';
 import { BaseSocket } from 'src/app/helper/rete/basesocket';
-import { IGraph, INode } from 'src/app/schemas/graph';
+import { IGraph, INode, ISubGraph } from 'src/app/schemas/graph';
 import { GraphService, Origin, Permission } from 'src/app/services/graph.service';
 import { NodeFactory } from 'src/app/services/nodefactory.service';
 import { Registry } from 'src/app/services/registry.service';
@@ -344,8 +344,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
       userCreated: false,
       inputValues: node.inputs,
       outputValues: node.outputs,
-      inputs: node.definition?.inputs,
-      outputs: node.definition?.outputs,
+      graph: node.graph,
     });
     if (node.settings) {
       n.setSettings(node.settings);
@@ -419,10 +418,18 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
   async ngAfterViewInit(): Promise<void> {
 
+
     const { editor, area, connection } = this.rs.createEditor(this.container.nativeElement, null);
 
-    this.rs.subgraphOpenObservable.subscribe((subgraph: string | null) => {
-      console.log("Open subgraph", subgraph);
+    this.rs.subgraphOpenObservable.subscribe((args: {
+      node: SubGraphNode,
+      subgraph: ISubGraph
+    }) => {
+      const sg = dump(args.subgraph, {
+        noCompatMode: true,
+      });
+
+      void this.debounceOpenGraph(args.node.id, sg, null);
     });
 
     this.gs.onNodeCreated$.subscribe(async (e: { node: BaseNode, userCreated: boolean }) => {

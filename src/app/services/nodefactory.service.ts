@@ -2,7 +2,7 @@ import { Injectable, Injector, inject } from "@angular/core";
 import { BaseNode, SubGraphNode } from "../helper/rete/basenode";
 import { IInputDefinition, INodeTypeDefinitionFull, IOutputDefinition } from "../helper/rete/interfaces/nodes";
 import { Registry } from "./registry.service";
-import { IInput, IOutput } from "../schemas/graph";
+import { IGraph, IInput, IOutput, ISubGraph } from "../schemas/graph";
 import { HostService } from "./host.service";
 import { Subject } from "rxjs";
 
@@ -13,22 +13,28 @@ export class NodeFactory {
     injector = inject(Injector);
     host = inject(HostService);
 
-    async createNode(id: string, type: string, inputChangeEvent: Subject<unknown>, inputs?: { [key: string]: IInputDefinition }, outputs?: { [key: string]: IOutputDefinition }, inputValues?: { [key: string]: IInput }, outputValues?: { [key: string]: IOutput }): Promise<BaseNode> {
+    async createNode(id: string, args: {
+        type: string,
+        inputChangeEvent: Subject<unknown>,
+        inputValues?: { [key: string]: IInput },
+        outputValues?: { [key: string]: IOutput },
+        graph?: ISubGraph
+    }): Promise<BaseNode> {
 
         const nr = this.injector.get(Registry);
 
-        let nodeDef: INodeTypeDefinitionFull | undefined = nr.getFullNodeTypeDefinitions().get(type);
+        let nodeDef: INodeTypeDefinitionFull | undefined = nr.getFullNodeTypeDefinitions().get(args.type);
         if (!nodeDef) {
-            await nr.loadFullNodeTypeDefinitions(new Set([type]));
-            nodeDef = nr.getFullNodeTypeDefinitions().get(type);
+            await nr.loadFullNodeTypeDefinitions(new Set([args.type]));
+            nodeDef = nr.getFullNodeTypeDefinitions().get(args.type);
             if (!nodeDef) {
-                throw new Error(`Node definition for ${type} not found`);
+                throw new Error(`Node definition for ${args.type} not found`);
             }
         }
 
         let displayName = nodeDef.name;
         if (!displayName && !nodeDef.compact) {
-            displayName = `${type} (not found)`;
+            displayName = `${args.type} (not found)`;
             nodeDef.name = displayName;
             nodeDef.style = {
                 header: {
@@ -41,16 +47,16 @@ export class NodeFactory {
         }
 
         let n: BaseNode;
-        if (nodeDef.id.startsWith("subgraph@")) {
-            n = new SubGraphNode(id, type, displayName, nodeDef);
-            if (inputs) {
-                nodeDef.inputs = { ...nodeDef.inputs, ...inputs };
+        if (nodeDef.id.startsWith("subgraph@") && args.graph !== undefined) {
+            if (args.graph?.inputs) {
+                nodeDef.inputs = { ...nodeDef.inputs, ...args.graph.inputs };
             }
-            if (outputs) {
-                nodeDef.outputs = { ...nodeDef.inputs, ...outputs };
+            if (args.graph?.outputs) {
+                nodeDef.outputs = { ...nodeDef.inputs, ...args.graph.outputs };
             }
+            n = new SubGraphNode(id, args.type, displayName, nodeDef, args.graph);
         } else {
-            n = new BaseNode(id, type, displayName, nodeDef);
+            n = new BaseNode(id, args.type, displayName, nodeDef);
         }
 
         if (nodeDef.inputs !== undefined) {
@@ -58,12 +64,12 @@ export class NodeFactory {
 
             for (const [inputId, inputDef] of Object.entries(nodeDef.inputs)) {
                 if (inputDef.group) {
-                    if (inputValues) {
+                    if (args.inputValues) {
                         let currentInputIndex = inputDef.index + 1;
                         const r = new RegExp(`^(${inputId})\\[([0-9]+)\\]$`);
                         // for every group, we find the inputs from the graph yaml
                         // and add them to the inputDefs map as these are group maps
-                        for (const [portId] of Object.entries(inputValues)) {
+                        for (const [portId] of Object.entries(args.inputValues)) {
                             const match = portId.match(r);
                             if (match) {
                                 inputDefs.set(portId, {
@@ -81,13 +87,13 @@ export class NodeFactory {
 
             for (const [inputId, inputDef] of inputDefs) {
 
-                const input = n.addInput2(inputId, inputDef, inputChangeEvent, false);
+                const input = n.addInput2(inputId, inputDef, args.inputChangeEvent, false);
 
                 // Regard the group initial value only for new nodes
-                if (inputValues === undefined) {
+                if (args.inputValues === undefined) {
                     if (inputDef.group_initial && typeof inputDef.group_initial === 'number') {
                         for (let i = 0; i < inputDef.group_initial; ++i) {
-                            n.appendInputValue(input, inputChangeEvent);
+                            n.appendInputValue(input, args.inputChangeEvent);
                         }
                     }
                 }
@@ -95,8 +101,8 @@ export class NodeFactory {
         }
 
         // Set input values set in the action graph yaml
-        if (inputValues) {
-            for (const [portId, portValue] of Object.entries(inputValues)) {
+        if (args.inputValues) {
+            for (const [portId, portValue] of Object.entries(args.inputValues)) {
                 n.setInputValue(portId, portValue);
             }
         }
@@ -107,7 +113,7 @@ export class NodeFactory {
                 const output = n.addOutput2(outputId, outputDef, false);
 
                 // Regard the group initial value only for new nodes
-                if (outputValues === undefined) {
+                if (args.outputValues === undefined) {
                     if (outputDef.group_initial && typeof outputDef.group_initial === 'number') {
                         for (let i = 0; i < outputDef.group_initial; ++i) {
                             n.appendOutputValue(output);
@@ -118,9 +124,9 @@ export class NodeFactory {
         }
 
         // Add outputs from the 'outputs' section of the action graph yaml.
-        if (outputValues !== undefined) {
+        if (args.outputValues !== undefined) {
             const r = new RegExp(/^([\w]+)\[[0-9]+\]$/);
-            for (const [outputId] of Object.entries(outputValues)) {
+            for (const [outputId] of Object.entries(args.outputValues)) {
                 const m = outputId.match(r);
                 if (!m) {
                     throw new Error(`Invalid output id: ${outputId}`);
