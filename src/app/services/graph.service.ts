@@ -6,14 +6,13 @@ import { NodeFactory } from './nodefactory.service';
 import { generateRandomWord } from '../helper/wordlist';
 import { IConnection, IExecution, IGraph, IInput, IOutput, INode } from '../schemas/graph';
 import { NodeEditor } from 'rete';
-import { AreaExtra, Schemes, g_area, g_editor } from '../helper/rete/editor';
 import { AreaPlugin, NodeView } from 'rete-area-plugin';
 import { parseRegistryUri } from '../helper/utils';
 import { HostService } from './host.service';
 import { Registry } from './registry.service';
 
 import AsyncLock from 'async-lock';
-import { ReteService } from './rete.service';
+import { AreaExtra, ReteService, Schemes } from './rete.service';
 
 export interface Origin {
   owner: string;
@@ -274,7 +273,7 @@ export class GraphService {
 
     const node: BaseNode = await this.nf.createNode(nodeId, nodeTypeId, this.inputChangeEvent, inputs, outputs);
 
-    await g_editor!.addNode(node);
+    await this.rs.getEditor().addNode(node);
 
     this.nodeCreated.next({ node: node, userCreated });
 
@@ -284,9 +283,9 @@ export class GraphService {
   async deleteNode(nodeId: string): Promise<void> {
     const associcatedNodes = new Set<string>();
 
-    for (const conn of g_editor!.getConnections()) {
+    for (const conn of this.rs.getEditor().getConnections()) {
       if (conn.source === nodeId || conn.target === nodeId) {
-        await g_editor!.removeConnection(conn.id);
+        await this.rs.getEditor().removeConnection(conn.id);
         if (conn.source === nodeId) {
           associcatedNodes.add(conn.target);
         } else {
@@ -295,11 +294,11 @@ export class GraphService {
       }
     }
 
-    await g_editor!.removeNode(nodeId);
+    await this.rs.getEditor().removeNode(nodeId);
 
     const promisesNodes = [];
     for (const subNodeId of associcatedNodes) {
-      promisesNodes.push(g_area!.update("node", subNodeId));
+      promisesNodes.push(this.rs.getArea()!.update("node", subNodeId));
     }
     await Promise.all(promisesNodes);
   }

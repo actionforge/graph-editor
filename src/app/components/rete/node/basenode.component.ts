@@ -13,7 +13,6 @@ import { BaseControl, BaseControlType } from "src/app/helper/rete/basecontrol";
 import { BaseInput } from "src/app/helper/rete/baseinput";
 import { BaseNode } from "src/app/helper/rete/basenode";
 import { BaseOutput } from "src/app/helper/rete/baseoutput";
-import { g_area, g_editor } from "src/app/helper/rete/editor";
 import { GraphService, Permission } from "src/app/services/graph.service";
 import { NodeFactory } from "src/app/services/nodefactory.service";
 import { Registry } from "src/app/services/registry.service";
@@ -89,10 +88,10 @@ export class BaseNodeComponent implements OnChanges {
     event.stopPropagation();
     event.preventDefault();
 
-    const n = g_editor!.getNode(this.data.id);
+    const n = this.rs.getEditor().getNode(this.data.id);
     n.getSettings().folded = Boolean(!n.getSettings().folded);
 
-    await g_area!.update("node", this.data.id);
+    await this.rs.getArea().update("node", this.data.id);
     this.cdr.detectChanges();
   }
 
@@ -113,7 +112,7 @@ export class BaseNodeComponent implements OnChanges {
 
     await this.data.appendOutputValue(output);
 
-    await g_area!.update("node", this.data.id);
+    await this.rs.getArea().update("node", this.data.id);
     this.cdr.detectChanges();
   }
 
@@ -124,9 +123,9 @@ export class BaseNodeComponent implements OnChanges {
 
     const control = input.control as BaseControl<BaseControlType> | null;
     if (control) {
-      await g_area!.update("control", control.id);
+      await this.rs.getArea().update("control", control.id);
     }
-    await g_area!.update("node", this.data.id);
+    await this.rs.getArea().update("node", this.data.id);
     this.cdr.detectChanges();
   }
 
@@ -134,7 +133,7 @@ export class BaseNodeComponent implements OnChanges {
     event.stopPropagation();
 
     await this.data.popOutputValue(output);
-    await g_area!.update("node", this.data.id);
+    await this.rs.getArea().update("node", this.data.id);
     this.cdr.detectChanges();
   }
 
@@ -144,9 +143,9 @@ export class BaseNodeComponent implements OnChanges {
     await this.data.popInputValue(input);
     const control = input.control as BaseControl<BaseControlType> | null;
     if (control) {
-      await g_area!.update("control", control.id);
+      await this.rs.getArea().update("control", control.id);
     }
-    await g_area!.update("node", this.data.id);
+    await this.rs.getArea().update("node", this.data.id);
     this.cdr.detectChanges();
   }
 

@@ -9,7 +9,6 @@ import { provideVSCodeDesignSystem, vsCodeButton } from "@vscode/webview-ui-tool
 import { RegistryUriInfo, getErrorMessage } from 'src/app/helper/utils';
 import { environment } from 'src/environments/environment';
 import { Clipboard } from '@angular/cdk/clipboard';
-import { g_area, g_editor } from 'src/app/helper/rete/editor';
 import { HostService as HostService } from 'src/app/services/host.service';
 import { ReteService } from 'src/app/services/rete.service';
 
@@ -44,7 +43,7 @@ export class SidebarComponent {
   }
 
   onCopyToClipboard(_event: MouseEvent): void {
-    const graph = this.gs.serializeGraph(g_editor!, g_area!, "Dev");
+    const graph = this.gs.serializeGraph(this.rs.getEditor(), this.rs.getArea(), "Dev");
     this.clipboard.copy(graph);
   }
 
@@ -61,7 +60,7 @@ export class SidebarComponent {
 
       if (this.isVsCode() || this.isElectron()) {
         const host = this.injector.get(HostService);
-        const graph = this.gs.serializeGraph(g_editor!, g_area!, '');
+        const graph = this.gs.serializeGraph(this.rs.getEditor(), this.rs.getArea(), '');
         void host.postMessage({ type: 'saveGraph', data: graph });
       }
 

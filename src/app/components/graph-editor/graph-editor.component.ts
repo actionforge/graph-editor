@@ -4,7 +4,6 @@ import { Output, Socket } from 'rete/_types/presets/classic';
 import { BaseConnection } from 'src/app/helper/rete/baseconnection';
 import { BaseNode } from 'src/app/helper/rete/basenode';
 import { BaseSocket } from 'src/app/helper/rete/basesocket';
-import { Schemes, g_area, g_arrange, createEditor, g_editor, readonly, AreaExtra } from 'src/app/helper/rete/editor';
 import { IGraph, INode } from 'src/app/schemas/graph';
 import { GraphService, Origin, Permission } from 'src/app/services/graph.service';
 import { NodeFactory } from 'src/app/services/nodefactory.service';
@@ -30,7 +29,7 @@ import { Clipboard } from '@angular/cdk/clipboard';
 import { simpleAmazons3 } from '@ng-icons/simple-icons';
 import { remixBarChartGroupedFill, remixFileSearchFill, remixFolderOpenLine, remixSave3Fill } from '@ng-icons/remixicon';
 import { dump } from 'js-yaml';
-import { ReteService } from 'src/app/services/rete.service';
+import { AreaExtra, ReteService, Schemes } from 'src/app/services/rete.service';
 
 import debounce from 'lodash.debounce';
 
@@ -69,7 +68,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   Permission = Permission;
 
   onCopyToClipboard(_event: MouseEvent): void {
-    const graph = this.gs.serializeGraph(g_editor!, g_area!, "Dev");
+    const graph = this.gs.serializeGraph(this.rs.getEditor(), this.rs.getArea(), "Dev");
     this.clipboard.copy(graph);
   }
 
@@ -311,20 +310,14 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   async openGraph(uri: string, graph: string, transform: Transform | null): Promise<void> {
-    if (!g_editor) {
-      throw new Error('editor not initialized');
-    } else if (!g_area) {
-      throw new Error('area not initialized');
-    }
-
     await this.gs.loadGraph(graph, environment.vscode && !uri.startsWith("git:"), async (g: IGraph) => {
       await this.loadGraphToEditor(g, transform);
     });
 
     const promises = [];
 
-    for (const node of g_editor.getNodes()) {
-      promises.push(g_area.update("node", node.id));
+    for (const node of this.rs.getEditor().getNodes()) {
+      promises.push(this.rs.getArea().update("node", node.id));
     }
 
     await Promise.all(promises);
@@ -348,23 +341,19 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
       n.setSettings(node.settings);
     }
 
-    await g_area!.translate(n.id, node.position);
+    await this.rs.getArea().translate(n.id, node.position);
 
     nodes.set(node.id, n);
   }
 
   async loadGraphToEditor(graph: IGraph, transform: Transform | null): Promise<void> {
-    if (!g_editor) {
-      throw new Error('Editor not initialized');
-    }
-
     this.githubGraph = graph.entry.startsWith("gh-start");
 
-    await g_editor.clear();
+    await this.rs.getEditor().clear();
 
     if (transform) {
-      await g_area!.area.zoom(transform.k, 0, 0);
-      await g_area!.area.translate(transform.x, transform.y);
+      await this.rs.getArea().area.zoom(transform.k, 0, 0);
+      await this.rs.getArea().area.translate(transform.x, transform.y);
     }
 
     await this.nr.loadFullNodeTypeDefinitions(new Set(graph.nodes.map(n => n.type)));
@@ -391,7 +380,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
         if (srcSocket !== undefined && dstSocket !== undefined) {
           const c = new BaseConnection(sourceNode, srcSocket.socket as BaseSocket, targetNode, dstSocket.socket as BaseSocket);
-          createConnections.push(g_editor.addConnection(c))
+          createConnections.push(this.rs.getEditor().addConnection(c))
         }
       }
     }
@@ -407,7 +396,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
         if (srcSocket !== undefined && dstSocket !== undefined) {
 
-          const promise = g_editor.addConnection(new BaseConnection(sourceNode, srcSocket.socket as BaseSocket, targetNode, dstSocket.socket as BaseSocket));
+          const promise = this.rs.getEditor().addConnection(new BaseConnection(sourceNode, srcSocket.socket as BaseSocket, targetNode, dstSocket.socket as BaseSocket));
           createConnections.push(promise);
         }
       }
@@ -418,17 +407,16 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
   async ngAfterViewInit(): Promise<void> {
 
-    const { editor, area, connection } = await createEditor(this.container.nativeElement, this.injector);
+    const subgraph = null;
 
-    editor.use(readonly.root);
-    area.use(readonly.area);
+    const { editor, area, connection } = this.rs.createEditor(this.container.nativeElement, subgraph);
 
     this.gs.onNodeCreated$.subscribe(async (e: { node: BaseNode, userCreated: boolean }) => {
       if (e.userCreated) {
         // center node on screen
         const [hw, hh] = [this.container.nativeElement.clientWidth / 2, this.container.nativeElement.clientHeight / 2];
-        const { x, y, k } = area!.area.transform;
-        await area!.translate(e.node.id, { x: (hw - x) / k, y: (hh - y) / k });
+        const { x, y, k } = area.area.transform;
+        await area.translate(e.node.id, { x: (hw - x) / k, y: (hh - y) / k });
       }
     });
 
@@ -477,8 +465,8 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
     if (environment.vscode || environment.electron) {
       const debounceSaveGraph = debounce(() => {
-        if (g_editor && g_area) {
-          const graph = this.gs.serializeGraph(g_editor, g_area, '');
+        if (this.rs.hasEditor()) {
+          const graph = this.gs.serializeGraph(this.rs.getEditor(), this.rs.getArea(), '');
           this.host.postMessage({ type: 'saveGraph', data: graph });
         }
       }, 500, {
@@ -660,26 +648,18 @@ description: ''
   }
 
   async arrangeNodes(): Promise<void> {
-    if (!g_arrange) {
-      throw new Error('arrange not initialized');
-    }
-    await g_arrange.layout();
+    await this.rs.getArrange().layout();
   }
 
   async fitToCanvas(): Promise<void> {
     await new Promise((resolve) => {
       setTimeout(() => {
-        if (!g_editor) {
-          throw new Error('editor not initialized');
-        } else if (!g_area) {
-          throw new Error('area not initialized');
-        }
-        void AreaExtensions.zoomAt(g_area, g_editor.getNodes(), { scale: 0.75 })
+        void AreaExtensions.zoomAt(this.rs.getArea(), this.rs.getEditor().getNodes(), { scale: 0.75 })
           .then(resolve)
       }, 0);
     })
 
-    const graph = this.gs.serializeGraph(g_editor!, g_area!, '');
+    const graph = this.gs.serializeGraph(this.rs.getEditor(), this.rs.getArea()!, '');
     void this.host.postMessage({ type: 'saveGraph', data: graph });
   }
 }
