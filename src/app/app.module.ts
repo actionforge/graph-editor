@@ -2,7 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgIconsModule } from '@ng-icons/core';
 import { AppComponent } from './app.component';
-import { GraphEditorComponent } from './components/graph-editor/graph-editor.component';
+import { EditorComponent } from './components/editor/editor.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -388,7 +388,7 @@ import { environment } from 'src/environments/environment';
     BaseSocketComponent,
     BaseConnectionComponent,
 
-    GraphEditorComponent,
+    EditorComponent,
     BaseControlComponent,
     SidebarComponent,
     NotificationComponent,

@@ -40,11 +40,11 @@ provideVSCodeDesignSystem().register(
 );
 
 @Component({
-  selector: 'app-graph-editor',
-  templateUrl: './graph-editor.component.html',
-  styleUrls: ['./graph-editor.component.scss']
+  selector: 'app-editor',
+  templateUrl: './editor.component.html',
+  styleUrls: ['./editor.component.scss']
 })
-export class GraphEditorComponent implements AfterViewInit, OnDestroy {
+export class EditorComponent implements AfterViewInit, OnDestroy {
   nr = inject(Registry);
   gs = inject(GraphService);
   nf = inject(NodeFactory);
