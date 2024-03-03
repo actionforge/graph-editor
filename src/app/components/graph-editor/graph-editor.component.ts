@@ -14,7 +14,7 @@ import { YamlService } from 'src/app/services/yaml.service';
 import { allComponents, provideVSCodeDesignSystem } from "@vscode/webview-ui-toolkit";
 import { HostAppMessage, HostService } from 'src/app/services/host.service';
 import { svgEnvGetIcon, svgEnvArray, svgFor, svgBranchIcon, svgParallelFor, svgParallelExec, svgStringArray, svgPrint, svgIterator, svgHttp, svgBoolAnd, svgBoolOr, svgBoolXand, svgBoolXor, svgNegate } from 'src/app/helper/icons';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { NotificationService, NotificationType } from 'src/app/services/notification.service';
 import { getErrorMessage } from 'src/app/helper/utils';
 import { GatewayService } from 'src/app/services/gateway.service';
@@ -57,6 +57,8 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   cdr = inject(ChangeDetectorRef);
   clipboard = inject(Clipboard);
   rs = inject(ReteService);
+
+  createdSubscription: Subscription | null = null;
 
   @ViewChild('rete') container!: ElementRef<HTMLElement>;
 
@@ -252,8 +254,6 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     ],
   ];
 
-
-
   githubGraph = false;
 
   messageSubscription = this.host.messageObservable$.subscribe(async (e: HostAppMessage) => {
@@ -328,6 +328,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.createdSubscription?.unsubscribe();
     this.messageSubscription.unsubscribe();
   }
 
@@ -418,7 +419,6 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
   async ngAfterViewInit(): Promise<void> {
 
-
     const { editor, area, connection } = this.rs.createEditor(this.container.nativeElement, null);
 
     this.rs.subgraphOpenObservable.subscribe((args: {
@@ -432,7 +432,7 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
       void this.debounceOpenGraph(args.node.id, sg, null);
     });
 
-    this.gs.onNodeCreated$.subscribe(async (e: { node: BaseNode, userCreated: boolean }) => {
+    this.createdSubscription = this.gs.onNodeCreated$.subscribe(async (e: { node: BaseNode, userCreated: boolean }) => {
       if (e.userCreated) {
         // center node on screen
         const [hw, hh] = [this.container.nativeElement.clientWidth / 2, this.container.nativeElement.clientHeight / 2];
