@@ -183,7 +183,7 @@ export class BaseNode extends ClassicPreset.Node {
     super.removeInput(key);
   }
 
-  async appendOutputValue(output: BaseOutput): Promise<void> {
+  appendOutputValue(output: BaseOutput): void {
     if (output.def.group) {
 
       const outputCount = getHighestSubPortIndex(output.socket.name, [...this.getOutputs().keys()]);
@@ -198,7 +198,7 @@ export class BaseNode extends ClassicPreset.Node {
     }
   }
 
-  async appendInputValue(input: BaseInput, inputChangeEvent: Subject<unknown>): Promise<void> {
+  appendInputValue(input: BaseInput, inputChangeEvent: Subject<unknown>): void {
     if (input.def.group) {
 
       const inputCount = getHighestSubPortIndex(input.socket.name, [...this.getInputValues().keys()]);

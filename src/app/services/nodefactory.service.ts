@@ -81,7 +81,7 @@ export class NodeFactory {
                 if (inputs === undefined) {
                     if (inputDef.group_initial && typeof inputDef.group_initial === 'number') {
                         for (let i = 0; i < inputDef.group_initial; ++i) {
-                            await n.appendInputValue(input, inputChangeEvent);
+                            n.appendInputValue(input, inputChangeEvent);
                         }
                     }
                 }
@@ -104,7 +104,7 @@ export class NodeFactory {
                 if (outputs === undefined) {
                     if (outputDef.group_initial && typeof outputDef.group_initial === 'number') {
                         for (let i = 0; i < outputDef.group_initial; ++i) {
-                            await n.appendOutputValue(output);
+                            n.appendOutputValue(output);
                         }
                     }
                 }

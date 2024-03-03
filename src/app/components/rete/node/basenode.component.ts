@@ -110,7 +110,7 @@ export class BaseNodeComponent implements OnChanges {
   async onAppendOutputValue(event: MouseEvent, output: BaseOutput): Promise<void> {
     event.stopPropagation();
 
-    await this.data.appendOutputValue(output);
+    this.data.appendOutputValue(output);
 
     await this.rs.getArea().update("node", this.data.id);
     this.cdr.detectChanges();
@@ -119,7 +119,7 @@ export class BaseNodeComponent implements OnChanges {
   async onAppendInputValue(event: MouseEvent, input: BaseInput): Promise<void> {
     event.stopPropagation();
 
-    await this.data.appendInputValue(input, this.gs.inputChangeSubject());
+    this.data.appendInputValue(input, this.gs.inputChangeSubject());
 
     const control = input.control as BaseControl<BaseControlType> | null;
     if (control) {
