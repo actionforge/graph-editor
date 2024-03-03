@@ -2,7 +2,7 @@
 <div class="flex flex-row h-full">
 
    <div class="relative" *ngIf="isWeb()">
-      <div *ngIf="(getOrigin() | async) as o"
+      <div *ngIf="(getSourceInfo() | async) as o"
          class="absolute z-[500] text-xl left-4 top-4 flex flex-col fill-gray-700 dark:fill-white whitespace-nowrap">
          {{ o.owner }} / {{ o.repo }} / {{ o.ref }} / {{ o.path }}
       </div>

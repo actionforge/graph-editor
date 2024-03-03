@@ -14,7 +14,7 @@ import { AreaExtra, ReteService, Schemes } from './rete.service';
 
 import AsyncLock from 'async-lock';
 
-export interface Origin {
+export interface SourceInfo {
   owner: string;
   repo: string;
   ref: string;
@@ -41,9 +41,10 @@ export class GraphService {
   loadingLock = new AsyncLock();
 
   lastGraph = '';
+  nodes = new Map<string, INode>();
 
-  private origin$ = new BehaviorSubject<Origin | null>(null);
-  originObservable$ = this.origin$.asObservable();
+  private sourceInfo = new BehaviorSubject<SourceInfo | null>(null);
+  sourceInfoObservable$ = this.sourceInfo.asObservable();
 
   private graphEntry$ = new BehaviorSubject<string | null>(null);
   graphEntryObservable$ = this.graphEntry$.asObservable();
@@ -359,8 +360,8 @@ export class GraphService {
     this.graphEntry$.next(null);
   }
 
-  setOrigin(o: Origin): void {
-    this.origin$.next(o);
+  setSource(o: SourceInfo): void {
+    this.sourceInfo.next(o);
   }
 }
 

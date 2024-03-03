@@ -5,7 +5,7 @@ import { BaseConnection } from 'src/app/helper/rete/baseconnection';
 import { BaseNode, SubGraphNode } from 'src/app/helper/rete/basenode';
 import { BaseSocket } from 'src/app/helper/rete/basesocket';
 import { IGraph, INode, ISubGraph } from 'src/app/schemas/graph';
-import { GraphService, Origin, Permission } from 'src/app/services/graph.service';
+import { GraphService, SourceInfo, Permission } from 'src/app/services/graph.service';
 import { NodeFactory } from 'src/app/services/nodefactory.service';
 import { Registry } from 'src/app/services/registry.service';
 import { octKey, octPlay, octTerminal } from '@ng-icons/octicons';
@@ -305,8 +305,8 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     return this.githubGraph;
   }
 
-  getOrigin(): Observable<Origin | null> {
-    return this.gs.originObservable$;
+  getSourceInfo(): Observable<SourceInfo | null> {
+    return this.gs.sourceInfoObservable$;
   }
 
   async openGraph(uri: string, graph: string, transform: Transform | null): Promise<void> {
