@@ -75,7 +75,10 @@ export class SidebarComponent {
     event.preventDefault();
     event.stopPropagation();
 
-    await this.gs.createNode(nodeTypeId, null, true);
+    await this.gs.createNode(nodeTypeId, {
+      nodeId: null,
+      userCreated: true,
+    });
   }
 
   trimNodeUri(nodeUri: string): string {

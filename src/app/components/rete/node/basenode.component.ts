@@ -105,6 +105,8 @@ export class BaseNodeComponent implements OnChanges {
   async onOpenSubGraph(event: MouseEvent): Promise<void> {
     event.stopPropagation();
     event.preventDefault();
+
+    this.rs.openSubGraph(this.data.id);
   }
 
   async onAppendOutputValue(event: MouseEvent, output: BaseOutput): Promise<void> {

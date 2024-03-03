@@ -1,3 +1,4 @@
+import { IInputDefinition, IOutputDefinition } from "../helper/rete/interfaces/nodes";
 
 
 export interface IGraph {
@@ -29,6 +30,15 @@ export type ISettings = {
 export interface INode {
     id: string;
     type: string;
+    definition?: {
+        outputs: {
+            [key: string]: IOutputDefinition;
+        };
+
+        inputs: {
+            [key: string]: IInputDefinition;
+        };
+    }
     position: { x: number; y: number };
     inputs?: { [key: string]: IInput };
     outputs?: { [key: string]: IOutput };

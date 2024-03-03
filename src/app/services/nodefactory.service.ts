@@ -13,7 +13,7 @@ export class NodeFactory {
     injector = inject(Injector);
     host = inject(HostService);
 
-    async createNode(id: string, type: string, inputChangeEvent: Subject<unknown>, inputs?: { [key: string]: IInput }, outputs?: { [key: string]: IOutput }): Promise<BaseNode> {
+    async createNode(id: string, type: string, inputChangeEvent: Subject<unknown>, inputs?: { [key: string]: IInputDefinition }, outputs?: { [key: string]: IOutputDefinition }, inputValues?: { [key: string]: IInput }, outputValues?: { [key: string]: IOutput }): Promise<BaseNode> {
 
         const nr = this.injector.get(Registry);
 
@@ -43,6 +43,12 @@ export class NodeFactory {
         let n: BaseNode;
         if (nodeDef.id.startsWith("subgraph@")) {
             n = new SubGraphNode(id, type, displayName, nodeDef);
+            if (inputs) {
+                nodeDef.inputs = { ...nodeDef.inputs, ...inputs };
+            }
+            if (outputs) {
+                nodeDef.outputs = { ...nodeDef.inputs, ...outputs };
+            }
         } else {
             n = new BaseNode(id, type, displayName, nodeDef);
         }
@@ -52,12 +58,12 @@ export class NodeFactory {
 
             for (const [inputId, inputDef] of Object.entries(nodeDef.inputs)) {
                 if (inputDef.group) {
-                    if (inputs) {
+                    if (inputValues) {
                         let currentInputIndex = inputDef.index + 1;
                         const r = new RegExp(`^(${inputId})\\[([0-9]+)\\]$`);
                         // for every group, we find the inputs from the graph yaml
                         // and add them to the inputDefs map as these are group maps
-                        for (const [portId] of Object.entries(inputs)) {
+                        for (const [portId] of Object.entries(inputValues)) {
                             const match = portId.match(r);
                             if (match) {
                                 inputDefs.set(portId, {
@@ -78,7 +84,7 @@ export class NodeFactory {
                 const input = n.addInput2(inputId, inputDef, inputChangeEvent, false);
 
                 // Regard the group initial value only for new nodes
-                if (inputs === undefined) {
+                if (inputValues === undefined) {
                     if (inputDef.group_initial && typeof inputDef.group_initial === 'number') {
                         for (let i = 0; i < inputDef.group_initial; ++i) {
                             n.appendInputValue(input, inputChangeEvent);
@@ -89,19 +95,19 @@ export class NodeFactory {
         }
 
         // Set input values set in the action graph yaml
-        if (inputs) {
-            for (const [portId, portValue] of Object.entries(inputs)) {
+        if (inputValues) {
+            for (const [portId, portValue] of Object.entries(inputValues)) {
                 n.setInputValue(portId, portValue);
             }
         }
 
         // Add all outputs defined in the node type definition
-        if (nodeDef.outputs !== undefined) {
+        if (nodeDef && nodeDef.outputs !== undefined) {
             for (const [outputId, outputDef] of Object.entries(nodeDef.outputs)) {
                 const output = n.addOutput2(outputId, outputDef, false);
 
                 // Regard the group initial value only for new nodes
-                if (outputs === undefined) {
+                if (outputValues === undefined) {
                     if (outputDef.group_initial && typeof outputDef.group_initial === 'number') {
                         for (let i = 0; i < outputDef.group_initial; ++i) {
                             n.appendOutputValue(output);
@@ -112,9 +118,9 @@ export class NodeFactory {
         }
 
         // Add outputs from the 'outputs' section of the action graph yaml.
-        if (outputs !== undefined) {
+        if (outputValues !== undefined) {
             const r = new RegExp(/^([\w]+)\[[0-9]+\]$/);
-            for (const [outputId] of Object.entries(outputs)) {
+            for (const [outputId] of Object.entries(outputValues)) {
                 const m = outputId.match(r);
                 if (!m) {
                     throw new Error(`Invalid output id: ${outputId}`);

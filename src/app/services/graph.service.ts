@@ -10,9 +10,10 @@ import { AreaPlugin, NodeView } from 'rete-area-plugin';
 import { parseRegistryUri } from '../helper/utils';
 import { HostService } from './host.service';
 import { Registry } from './registry.service';
+import { AreaExtra, ReteService, Schemes } from './rete.service';
+import { IInputDefinition, IOutputDefinition } from '../helper/rete/interfaces/nodes';
 
 import AsyncLock from 'async-lock';
-import { AreaExtra, ReteService, Schemes } from './rete.service';
 
 export interface Origin {
   owner: string;
@@ -264,18 +265,31 @@ export class GraphService {
     return g;
   }
 
-  async createNode(nodeTypeId: string, nodeId: string | null, userCreated: boolean, inputs?: { [key: string]: IInput }, outputs?: { [key: string]: IOutput }): Promise<BaseNode> {
-    const sanitizedNodeId = nodeTypeId.replace(/[^a-zA-Z0-9-]/g, '-').replace(/^github.com-/, 'gh-')
+  async createNode(nodeTypeId: string, args: {
+    nodeId: string | null,
+    userCreated: boolean,
+    inputs?: { [key: string]: IInputDefinition },
+    outputs?: { [key: string]: IOutputDefinition },
+    inputValues?: { [key: string]: IInput },
+    outputValues?: { [key: string]: IOutput },
+  }): Promise<BaseNode> {
+    const sanitizedNodeId = nodeTypeId.replace(/[^a-zA-Z0-9-]/g, '-').replace(/^github.com-/, 'gh-');
 
-    if (!nodeId) {
-      nodeId = `${sanitizedNodeId}-${generateRandomWord(3)}`
+    if (!args.nodeId) {
+      args.nodeId = `${sanitizedNodeId}-${generateRandomWord(3)}`
     }
 
-    const node: BaseNode = await this.nf.createNode(nodeId, nodeTypeId, this.inputChangeEvent, inputs, outputs);
+    const node: BaseNode = await this.nf.createNode(args.nodeId,
+      nodeTypeId,
+      this.inputChangeEvent,
+      args.inputs,
+      args.outputs,
+      args.inputValues,
+      args.outputValues);
 
     await this.rs.getEditor().addNode(node);
 
-    this.nodeCreated.next({ node: node, userCreated });
+    this.nodeCreated.next({ node: node, userCreated: args.userCreated });
 
     return node
   }

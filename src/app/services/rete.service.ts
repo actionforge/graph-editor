@@ -29,6 +29,7 @@ import { BaseNode } from "../helper/rete/basenode";
 import { BaseConnection } from "../helper/rete/baseconnection";
 import { BaseOutput } from "../helper/rete/baseoutput";
 import { BaseInput } from "../helper/rete/baseinput";
+import { Subject } from "rxjs";
 
 export type Conn = BaseConnection<BaseNode, BaseNode>;
 export type Schemes = GetSchemes<BaseNode, Conn>;
@@ -46,6 +47,13 @@ interface ReteComponents {
 export class ReteService {
     private comps = new Map<string, ReteComponents>();
     private injector = inject(Injector);
+
+    private $subgraphOpen = new Subject<string | null>();
+    subgraphOpenObservable = this.$subgraphOpen.asObservable();
+
+    openSubGraph(subgraph: string): void {
+        this.$subgraphOpen.next(subgraph);
+    }
 
     createEditor(element: HTMLElement, subgraph?: string | null): {
         editor: NodeEditor<Schemes>,

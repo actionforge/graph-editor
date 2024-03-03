@@ -332,18 +332,27 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   async onCreateNode(_event: MouseEvent, nodeTypeId: string): Promise<void> {
-    await this.gs.createNode(nodeTypeId, null, true);
+    await this.gs.createNode(nodeTypeId, {
+      nodeId: null,
+      userCreated: true
+    });
   }
 
-  async createAndAddNodes(node: INode, nodes: Map<string, BaseNode>): Promise<void> {
-    const n = await this.gs.createNode(node.type, node.id, false, node.inputs, node.outputs);
+  async createAndAddNodes(node: INode): Promise<BaseNode> {
+    const n = await this.gs.createNode(node.type, {
+      nodeId: node.id,
+      userCreated: false,
+      inputValues: node.inputs,
+      outputValues: node.outputs,
+      inputs: node.definition?.inputs,
+      outputs: node.definition?.outputs,
+    });
     if (node.settings) {
       n.setSettings(node.settings);
     }
 
     await this.rs.getArea().translate(n.id, node.position);
-
-    nodes.set(node.id, n);
+    return n;
   }
 
   async loadGraphToEditor(graph: IGraph, transform: Transform | null): Promise<void> {
@@ -361,8 +370,11 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
     const creates = [];
 
     const nodes = new Map<string, BaseNode>();
+
     for (const node of graph.nodes) {
-      creates.push(this.createAndAddNodes(node, nodes));
+      creates.push(this.createAndAddNodes(node).then((n) => {
+        nodes.set(n.id, n);
+      }));
     }
 
     await Promise.all(creates);
@@ -407,9 +419,11 @@ export class GraphEditorComponent implements AfterViewInit, OnDestroy {
 
   async ngAfterViewInit(): Promise<void> {
 
-    const subgraph = null;
+    const { editor, area, connection } = this.rs.createEditor(this.container.nativeElement, null);
 
-    const { editor, area, connection } = this.rs.createEditor(this.container.nativeElement, subgraph);
+    this.rs.subgraphOpenObservable.subscribe((subgraph: string | null) => {
+      console.log("Open subgraph", subgraph);
+    });
 
     this.gs.onNodeCreated$.subscribe(async (e: { node: BaseNode, userCreated: boolean }) => {
       if (e.userCreated) {
