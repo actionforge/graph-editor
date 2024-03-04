@@ -13,7 +13,7 @@ import { BaseControl, BaseControlType } from "src/app/helper/rete/basecontrol";
 import { BaseInput } from "src/app/helper/rete/baseinput";
 import { BaseNode, SubGraphNode } from "src/app/helper/rete/basenode";
 import { BaseOutput } from "src/app/helper/rete/baseoutput";
-import { GraphService, Permission } from "src/app/services/graph.service";
+import { EditorService, Permission } from "src/app/services/editor.service";
 import { NodeFactory } from "src/app/services/nodefactory.service";
 import { Registry } from "src/app/services/registry.service";
 import { ReteService } from "src/app/services/rete.service";
@@ -54,7 +54,7 @@ const BODY_BACKGROUND_COLORS = new Map<string, string>([
 export class BaseNodeComponent implements OnChanges {
 
   cdr = inject(ChangeDetectorRef);
-  gs = inject(GraphService);
+  gs = inject(EditorService);
   nf = inject(NodeFactory);
   nr = inject(Registry);
   rs = inject(ReteService);

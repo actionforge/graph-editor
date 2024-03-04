@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnChanges, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { BaseControl, BaseControlType } from 'src/app/helper/rete/basecontrol';
-import { GraphService, Permission } from 'src/app/services/graph.service';
+import { EditorService, Permission } from 'src/app/services/editor.service';
 
 @Component({
   selector: 'app-basecontrol',
@@ -9,7 +9,7 @@ import { GraphService, Permission } from 'src/app/services/graph.service';
 })
 export class BaseControlComponent implements OnChanges {
   cdr = inject(ChangeDetectorRef);
-  gs = inject(GraphService);
+  gs = inject(EditorService);
 
   BaseControlType = BaseControlType;
 

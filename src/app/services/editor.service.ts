@@ -30,7 +30,7 @@ export enum Permission {
 @Injectable({
   providedIn: 'root'
 })
-export class GraphService {
+export class EditorService {
   nf = inject(NodeFactory);
   injector = inject(Injector);
   vscode = inject(HostService);

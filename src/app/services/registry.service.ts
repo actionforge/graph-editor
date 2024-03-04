@@ -6,7 +6,7 @@ import { YamlService } from "src/app/services/yaml.service";
 import { environment } from "src/environments/environment";
 import { INodeTypeDefinitionBasic, INodeTypeDefinitionFull } from "../helper/rete/interfaces/nodes";
 import { RegistryUriInfo, parseRegistryUri, uriToString } from "../helper/utils";
-import { GraphService } from "./graph.service";
+import { EditorService } from "./editor.service";
 
 @Injectable({
     providedIn: 'root'
@@ -14,7 +14,7 @@ import { GraphService } from "./graph.service";
 export class Registry {
     yamlService = inject(YamlService);
     vscode = inject(HostService);
-    gs = inject(GraphService);
+    gs = inject(EditorService);
 
     private basicDefs = new BehaviorSubject<Map<string, INodeTypeDefinitionBasic> | 'loading'>('loading');
     private basicNodeTypeObservable$ = this.basicDefs.asObservable();

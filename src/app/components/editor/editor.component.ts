@@ -5,7 +5,7 @@ import { BaseConnection } from 'src/app/helper/rete/baseconnection';
 import { BaseNode } from 'src/app/helper/rete/basenode';
 import { BaseSocket } from 'src/app/helper/rete/basesocket';
 import { IGraph, INode } from 'src/app/schemas/graph';
-import { GraphService, SourceInfo, Permission } from 'src/app/services/graph.service';
+import { EditorService, SourceInfo, Permission } from 'src/app/services/editor.service';
 import { NodeFactory } from 'src/app/services/nodefactory.service';
 import { Registry } from 'src/app/services/registry.service';
 import { octKey, octPlay, octTerminal } from '@ng-icons/octicons';
@@ -46,7 +46,7 @@ provideVSCodeDesignSystem().register(
 })
 export class EditorComponent implements AfterViewInit, OnDestroy {
   nr = inject(Registry);
-  gs = inject(GraphService);
+  gs = inject(EditorService);
   nf = inject(NodeFactory);
   ns = inject(NotificationService);
   gw = inject(GatewayService);

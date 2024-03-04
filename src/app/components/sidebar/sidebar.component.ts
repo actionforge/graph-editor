@@ -1,5 +1,5 @@
 import { Component, Injector, inject } from '@angular/core';
-import { GraphService } from 'src/app/services/graph.service';
+import { EditorService } from 'src/app/services/editor.service';
 import { NotificationService, NotificationType } from 'src/app/services/notification.service';
 import { Registry } from 'src/app/services/registry.service';
 import { INodeTypeDefinitionBasic } from 'src/app/helper/rete/interfaces/nodes';
@@ -23,7 +23,7 @@ export class SidebarComponent {
   nf = inject(NodeFactory);
   nr = inject(Registry);
   ns = inject(NotificationService);
-  gs = inject(GraphService);
+  gs = inject(EditorService);
   clipboard = inject(Clipboard);
   injector = inject(Injector);
   rs = inject(ReteService);
