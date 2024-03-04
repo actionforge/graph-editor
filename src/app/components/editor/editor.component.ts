@@ -423,7 +423,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   async ngAfterViewInit(): Promise<void> {
 
-    const { editor, area, connection } = this.rs.createEditor(this.container.nativeElement, null);
+    const { editor, area, connection } = this.rs.createEditor(this.container.nativeElement);
 
     this.createdSubscription = this.es.onNodeCreated$.subscribe(async (e: { node: BaseNode, userCreated: boolean }) => {
       if (e.userCreated) {

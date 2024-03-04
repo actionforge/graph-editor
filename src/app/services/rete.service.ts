@@ -11,8 +11,6 @@ import { BaseControlComponent } from "../components/basecontrol/basecontrol.comp
 import { AreaExtensions, AreaPlugin } from 'rete-area-plugin';
 import { BaseNode } from "../helper/rete/basenode";
 import { BaseConnection } from "../helper/rete/baseconnection";
-import { BaseOutput } from "../helper/rete/baseoutput";
-import { BaseInput } from "../helper/rete/baseinput";
 
 import {
     ConnectionPlugin,
@@ -29,25 +27,27 @@ import {
     AutoArrangePlugin,
     Presets as ArrangePresets,
 } from 'rete-auto-arrange-plugin';
+import { Subject } from "rxjs";
 
 export type Conn = BaseConnection<BaseNode, BaseNode>;
 export type Schemes = GetSchemes<BaseNode, Conn>;
 export type AreaExtra = AngularArea2D<Schemes>;
 
-interface ReteComponents {
-    editor: NodeEditor<Schemes>;
-    area: AreaPlugin<Schemes, AreaExtra>;
-    arrange: AutoArrangePlugin<Schemes, never>;
-}
 
 @Injectable({
     providedIn: 'root'
 })
 export class ReteService {
-    private comps = new Map<string, ReteComponents>();
     private injector = inject(Injector);
 
-    createEditor(element: HTMLElement, subgraph?: string | null): {
+    editor: NodeEditor<Schemes> | null = null;
+    area: AreaPlugin<Schemes, AreaExtra> | null = null;
+    arrange: AutoArrangePlugin<Schemes, never> | null = null;
+
+    private onEvent = new Subject<unknown>();
+    onEvent$ = this.onEvent.asObservable();
+
+    createEditor(element: HTMLElement): {
         editor: NodeEditor<Schemes>,
         arrange: AutoArrangePlugin<Schemes, never>,
         area: AreaPlugin<Schemes, AreaExtra>,
@@ -98,7 +98,27 @@ export class ReteService {
         area.use(arrange);
         area.use(readonly.area);
 
-        installPipes(editor);
+        this.installPipes(editor);
+
+        editor.addPipe((context) => {
+            this.onEvent.next(context);
+            return context;
+        });
+
+        area.addPipe((context) => {
+            this.onEvent.next(context);
+            return context;
+        });
+
+        connection.addPipe((context) => {
+            this.onEvent.next(context);
+            return context;
+        });
+
+        arrange.addPipe((context) => {
+            this.onEvent.next(context);
+            return context;
+        });
 
         AreaExtensions.simpleNodesOrder(area)
         AreaExtensions.selectableNodes(area, AreaExtensions.selector(), { accumulating: AreaExtensions.accumulateOnCtrl() });
@@ -107,118 +127,118 @@ export class ReteService {
             return !hasAnyConnection;
         })
 
-        this.comps.set(subgraph || '', { editor, area, arrange });
+        this.editor = editor;
+        this.area = area;
+        this.arrange = arrange;
 
         return { editor, area, arrange, connection };
     }
 
-    hasEditor(subgraph?: string | null): boolean {
-        return this.comps.has(subgraph || '');
+    hasEditor(): boolean {
+        return !!this.editor;
     }
 
-    getEditor(subgraph?: string | null): NodeEditor<Schemes> {
-        const c = this.comps.get(subgraph || '');
-        if (!c) {
+    getEditor(): NodeEditor<Schemes> {
+        if (!this.editor) {
             throw new Error('editor not initialized');
         }
-        return c.editor;
+        return this.editor as NodeEditor<Schemes>;
     }
 
-    getArea(subgraph?: string | null): AreaPlugin<Schemes, AreaExtra> {
-        const c = this.comps.get(subgraph || '');
-        if (!c) {
+    getArea(): AreaPlugin<Schemes, AreaExtra> {
+        if (!this.area) {
             throw new Error('area not initialized');
         }
-        return c.area;
+        return this.area;
     }
 
-    getArrange(subgraph?: string | null): AutoArrangePlugin<Schemes, never> {
-        const c = this.comps.get(subgraph || '');
-        if (!c) {
+    getArrange(): AutoArrangePlugin<Schemes, never> {
+        if (!this.arrange) {
             throw new Error('arrange not initialized');
         }
-        return c.arrange;
+        return this.arrange;
     }
 
-    getCount(): number {
-        return this.comps.size;
-    }
-}
+    private installPipes(editor: NodeEditor<Schemes>): void {
+        editor.addPipe((context: Root<Schemes>) => {
+            this.onEvent.next(context);
+            return context;
 
-function installPipes(editor: NodeEditor<Schemes>): void {
-    editor.addPipe((context: Root<Schemes>) => {
-        const { type } = context as { type: string };
-        switch (type) {
-            case "connectioncreated": {
-                const { data } = context as { data: { id: string, source: string, sourceOutput: string, target: string, targetInput: string } };
+            /*
+            const { type } = context as { type: string };
+            switch (type) {
+                case "connectioncreated": {
+                    const { data } = context as { data: { id: string, source: string, sourceOutput: string, target: string, targetInput: string } };
 
-                const sourceNode: BaseNode | undefined = editor.getNode(data.source);
-                if (sourceNode) {
-                    sourceNode.addOutgoingConnection(data.sourceOutput);
+                    const sourceNode: BaseNode | undefined = editor.getNode(data.source);
+                    if (sourceNode) {
+                        sourceNode.addOutgoingConnection(data.sourceOutput);
+                    }
+
+                    break;
                 }
+                case "connectionremoved": {
+                    const { data } = context as { data: { id: string, source: string, sourceOutput: string, target: string, targetInput: string } };
 
-                break;
-            }
-            case "connectionremoved": {
-                const { data } = context as { data: { id: string, source: string, sourceOutput: string, target: string, targetInput: string } };
+                    const sourceNode: BaseNode | undefined = editor.getNode(data.source)
+                    if (sourceNode) {
+                        sourceNode.removeOutgoingConnection(data.sourceOutput);
+                    }
 
-                const sourceNode: BaseNode | undefined = editor.getNode(data.source)
-                if (sourceNode) {
-                    sourceNode.removeOutgoingConnection(data.sourceOutput);
+                    break;
                 }
+                case "connectioncreate": {
+                    const { data } = context as { type: string, data: BaseConnection<BaseNode, BaseNode> };
 
-                break;
-            }
-            case "connectioncreate": {
-                const { data } = context as { type: string, data: BaseConnection<BaseNode, BaseNode> };
+                    const sourceNode: BaseNode | undefined = editor.getNode(data.source);
+                    const targetNode: BaseNode | undefined = editor.getNode(data.target);
+                    if (!sourceNode || !targetNode) {
+                        return undefined;
+                    }
 
-                const sourceNode: BaseNode | undefined = editor.getNode(data.source);
-                const targetNode: BaseNode | undefined = editor.getNode(data.target);
-                if (!sourceNode || !targetNode) {
-                    return undefined;
-                }
+                    const sourceOutput: BaseOutput | undefined = sourceNode.getOutput(data.sourceOutput);
+                    const targetInput: BaseInput | undefined = targetNode.getInput(data.targetInput);
+                    if (!sourceOutput || !targetInput) {
+                        return undefined;
+                    }
 
-                const sourceOutput: BaseOutput | undefined = sourceNode.getOutput(data.sourceOutput);
-                const targetInput: BaseInput | undefined = targetNode.getInput(data.targetInput);
-                if (!sourceOutput || !targetInput) {
-                    return undefined;
-                }
+                    const typeSource = sourceOutput.socket.getInferredType();
+                    const typeTarget = targetInput.socket.getInferredType();
 
-                const typeSource = sourceOutput.socket.getInferredType();
-                const typeTarget = targetInput.socket.getInferredType();
-
-                if (targetInput.socket.isExec()) {
-                    if (sourceOutput.socket.isExec()) {
-                        return context;
+                    if (targetInput.socket.isExec()) {
+                        if (sourceOutput.socket.isExec()) {
+                            return context;
+                        } else {
+                            return undefined;
+                        }
                     } else {
-                        return undefined;
-                    }
-                } else {
-                    if (sourceOutput.socket.isExec()) {
-                        return undefined;
-                    } else if ([typeSource, 'any', 'unknown'].includes(typeTarget) || typeSource === 'unknown') {
-                        return context;
-                    }
+                        if (sourceOutput.socket.isExec()) {
+                            return undefined;
+                        } else if ([typeSource, 'any', 'unknown'].includes(typeTarget) || typeSource === 'unknown') {
+                            return context;
+                        }
 
-                    // support for casting types
-                    switch (typeTarget) {
-                        case 'bool':
-                            return typeSource === 'number' ? context : undefined;
-                        case 'number':
-                            return typeSource === 'bool' ? context : undefined;
-                        case 'string':
-                            return ['number', 'bool'].includes(typeSource) ? context : undefined;
-                        case 'option':
-                            return ['number', 'string'].includes(typeSource) ? context : undefined;
-                        case '[]bool':
-                            return typeSource === '[]number' ? context : undefined;
-                        case '[]number':
-                            return typeSource === '[]bool' ? context : undefined;
+                        // support for casting types
+                        switch (typeTarget) {
+                            case 'bool':
+                                return typeSource === 'number' ? context : undefined;
+                            case 'number':
+                                return typeSource === 'bool' ? context : undefined;
+                            case 'string':
+                                return ['number', 'bool'].includes(typeSource) ? context : undefined;
+                            case 'option':
+                                return ['number', 'string'].includes(typeSource) ? context : undefined;
+                            case '[]bool':
+                                return typeSource === '[]number' ? context : undefined;
+                            case '[]number':
+                                return typeSource === '[]bool' ? context : undefined;
+                        }
+                        return undefined;
                     }
-                    return undefined;
                 }
             }
-        }
-        return context;
-    })
+            */
+        })
+    }
+
 }
