@@ -41,7 +41,15 @@ export class GraphService {
   loadingLock = new AsyncLock();
 
   lastGraph = '';
-  nodes = new Map<string, INode>();
+
+  root: IGraph = {
+    description: '',
+    entry: '',
+    nodes: [],
+    connections: [],
+    executions: [],
+    registries: [],
+  }
 
   private sourceInfo = new BehaviorSubject<SourceInfo | null>(null);
   sourceInfoObservable$ = this.sourceInfo.asObservable();
@@ -65,7 +73,7 @@ export class GraphService {
     return this.inputChangeEvent;
   }
 
-  async loadGraph(graph: string, writable: boolean, cb: LoadingGraphFunction): Promise<void> {
+  async loadGraph(graph: string, writable: boolean, loadCb: LoadingGraphFunction): Promise<void> {
 
     if (graph !== "" && this.lastGraph === graph) {
       return;
@@ -119,144 +127,21 @@ export class GraphService {
       const registries = new Set(g.registries);
       const prom = nr.loadBasicNodeTypeDefinitions(registries);
 
-      await cb(g);
+      await loadCb(g);
 
       await Promise.all([prom]);
 
       this.lastGraph = graph;
+      this.root = g;
 
       this.graphEntry$.next(g.entry);
       this.graphRegistries$.next(registries);
-      this.permission$.next(Permission.Writable);
+      this.permission$.next(writable ? Permission.Writable : Permission.ReadOnly);
     });
   }
 
-  serializeGraph(editor: NodeEditor<Schemes>, area: AreaPlugin<Schemes, AreaExtra>, description: string): string {
-    if (!editor || !area) {
-      throw new Error('Editor not initialized');
-    }
-
-    // Use injector to avoid circular dependency
-    const gs = this.injector.get(GraphService);
-
-    const entry = this.graphEntry$.value;
-    if (!entry) {
-      throw new Error('Entry not set');
-    }
-
-    const nodes: (INode | (INode & IGraph))[] = [];
-    const connections: IConnection[] = [];
-    const executions: IExecution[] = [];
-
-    const nodeMap = new Map<string, BaseNode>();
-    const nodeArray = editor.getNodes();
-    for (const node of nodeArray) {
-      nodeMap.set(node.id, node);
-    }
-
-    for (const [_, node] of nodeMap) {
-
-      // Store all changed input values
-      const inputs: Record<string, IInput> = {};
-
-      const defaultInputValues = new Map<string, unknown>();
-      if (node.getDefinition().inputs) {
-        for (const [key, port] of Object.entries(node.getDefinition().inputs)) {
-          defaultInputValues.set(key, port.default);
-        }
-      }
-
-      for (const [inputId, userValue] of node.getInputValues()) {
-        // If the entered value is different than the default value
-        // from the node definition, store it in the yaml
-        const defValue: unknown | undefined = defaultInputValues.get(inputId);
-        if (userValue !== undefined && userValue !== defValue) {
-          inputs[inputId] = userValue;
-        }
-      }
-
-      const outputs: Record<string, IOutput> = {};
-
-      // Add all sub ports to the 'outputs' section of the action graph yaml
-      for (const [outputId, output] of node.getOutputs()) {
-        if (output.sub) {
-          outputs[outputId] = "";
-        }
-      }
-
-      const view: NodeView | undefined = area.nodeViews.get(node.id);
-      if (node instanceof SubGraphNode) {
-        nodes.push({
-          id: node.id,
-          type: node.getType(),
-          position: view?.position || { x: 0, y: 0 },
-          inputs: Object.values(inputs).length > 0 ? inputs : undefined,
-          outputs: Object.values(outputs).length > 0 ? outputs : undefined,
-          settings: Object.values(node.getSettings()).length > 0 ? node.getSettings() : undefined,
-          ... {
-            entry: "123"
-          }
-        });
-      } else {
-        nodes.push({
-          id: node.id,
-          type: node.getType(),
-          position: view?.position || { x: 0, y: 0 },
-          inputs: Object.values(inputs).length > 0 ? inputs : undefined,
-          outputs: Object.values(outputs).length > 0 ? outputs : undefined,
-          settings: Object.values(node.getSettings()).length > 0 ? node.getSettings() : undefined
-        });
-      }
-    }
-
-    for (const connection of editor.getConnections()) {
-
-      const sourceNode: BaseNode | undefined = nodeMap.get(connection.source);
-      const targetNode: BaseNode | undefined = nodeMap.get(connection.target);
-
-      if (sourceNode && targetNode) {
-
-        const execSource = connection.sourceOutput.startsWith('exec');
-        const execTarget = connection.targetInput.startsWith('exec');
-
-        if (execSource && execTarget) {
-          executions.push({
-            src: {
-              node: sourceNode.id,
-              port: connection.sourceOutput,
-            },
-            dst: {
-              node: targetNode.id,
-              port: connection.targetInput,
-            }
-          });
-        } else if (!execSource && !execTarget) {
-          connections.push({
-            src: {
-              node: sourceNode.id,
-              port: connection.sourceOutput,
-            },
-            dst: {
-              node: targetNode.id,
-              port: connection.targetInput,
-            }
-          });
-        } else {
-          throw new Error("")
-        }
-      }
-    }
-
-    const graph: IGraph = {
-      entry,
-      executions,
-      connections,
-      nodes,
-      registries: [...gs.getRegistries()],
-      description,
-    };
-
-    const g = dump(graph, {
+  serializeGraph(): string {
+    const g = dump(this.root, {
       noCompatMode: true,
     });
 

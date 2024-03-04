@@ -61,8 +61,23 @@ export class Registry {
         }
     }
 
+    allAlreadyLoaded(registryUris: Set<string>): boolean {
+        const missingUris = new Set<string>();
+        for (const uri of registryUris) {
+            if (!this.fullDefs.has(uri)) {
+                missingUris.add(uri);
+            }
+        }
+        // all uris have already been loaded
+        return missingUris.size === 0;
+    }
+
     async loadFullNodeTypeDefinitions(registryUris: Set<string>): Promise<void> {
         try {
+            if (this.allAlreadyLoaded(registryUris)) {
+                return;
+            }
+
             const nodeDefs = await this.yamlService.httpPost<INodeTypeDefinitionFull[]>(`${environment.gatewayUrl}/api/v1/registry/nodedefs/full`, {
                 registry_uris: [...registryUris],
             }, {

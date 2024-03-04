@@ -43,7 +43,7 @@ export class SidebarComponent {
   }
 
   onCopyToClipboard(_event: MouseEvent): void {
-    const graph = this.gs.serializeGraph(this.rs.getEditor(), this.rs.getArea(), "Dev");
+    const graph = this.gs.serializeGraph();
     this.clipboard.copy(graph);
   }
 
@@ -60,7 +60,7 @@ export class SidebarComponent {
 
       if (this.isVsCode() || this.isElectron()) {
         const host = this.injector.get(HostService);
-        const graph = this.gs.serializeGraph(this.rs.getEditor(), this.rs.getArea(), '');
+        const graph = this.gs.serializeGraph();
         void host.postMessage({ type: 'saveGraph', data: graph });
       }
 

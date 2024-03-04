@@ -25,7 +25,10 @@ export class NodeFactory {
 
         let nodeDef: INodeTypeDefinitionFull | undefined = nr.getFullNodeTypeDefinitions().get(args.type);
         if (!nodeDef) {
-            await nr.loadFullNodeTypeDefinitions(new Set([args.type]));
+            const registryUris = new Set([args.type]);
+            if (!nr.allAlreadyLoaded(registryUris)) {
+                await nr.loadFullNodeTypeDefinitions(registryUris);
+            }
             nodeDef = nr.getFullNodeTypeDefinitions().get(args.type);
             if (!nodeDef) {
                 throw new Error(`Node definition for ${args.type} not found`);
