@@ -75,7 +75,7 @@ export class SidebarComponent {
     event.preventDefault();
     event.stopPropagation();
 
-    await this.es.createNode(nodeTypeId, {
+    await this.es.createAndAddNode(nodeTypeId, {
       nodeId: null,
       userCreated: true,
     });

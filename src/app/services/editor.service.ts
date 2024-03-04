@@ -148,7 +148,7 @@ export class EditorService {
     return g;
   }
 
-  async createNode(nodeTypeId: string, args: {
+  async createAndAddNode(nodeTypeId: string, args: {
     nodeId: string | null,
     userCreated: boolean,
     inputValues?: { [key: string]: IInput },

@@ -333,15 +333,15 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   }
 
   async onCreateNode(_event: MouseEvent, nodeTypeId: string): Promise<void> {
-    await this.es.createNode(nodeTypeId, {
+    await this.es.createAndAddNode(nodeTypeId, {
       nodeId: null,
       userCreated: true
     });
   }
 
-  async createAndAddNodes(node: INode): Promise<BaseNode> {
+  async createAndAddNode(node: INode): Promise<BaseNode> {
 
-    const n = await this.es.createNode(node.type, {
+    const n = await this.es.createAndAddNode(node.type, {
       nodeId: node.id,
       userCreated: false,
       inputValues: node.inputs,
@@ -376,7 +376,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     const nodes = new Map<string, BaseNode>();
 
     for (const node of graph.nodes) {
-      creates.push(this.createAndAddNodes(node).then((n) => {
+      creates.push(this.createAndAddNode(node).then((n) => {
         nodes.set(n.id, n);
       }));
     }
