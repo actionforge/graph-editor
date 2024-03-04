@@ -54,7 +54,7 @@ const BODY_BACKGROUND_COLORS = new Map<string, string>([
 export class BaseNodeComponent implements OnChanges {
 
   cdr = inject(ChangeDetectorRef);
-  gs = inject(EditorService);
+  es = inject(EditorService);
   nf = inject(NodeFactory);
   nr = inject(Registry);
   rs = inject(ReteService);
@@ -99,7 +99,7 @@ export class BaseNodeComponent implements OnChanges {
     event.stopPropagation();
     event.preventDefault();
 
-    await this.gs.deleteNode(this.data.id);
+    await this.es.deleteNode(this.data.id);
   }
 
   async onOpenSubGraph(event: MouseEvent): Promise<void> {
@@ -121,7 +121,7 @@ export class BaseNodeComponent implements OnChanges {
   async onAppendInputValue(event: MouseEvent, input: BaseInput): Promise<void> {
     event.stopPropagation();
 
-    this.data.appendInputValue(input, this.gs.inputChangeSubject());
+    this.data.appendInputValue(input, this.es.inputChangeSubject());
 
     const control = input.control as BaseControl<BaseControlType> | null;
     if (control) {
@@ -213,7 +213,7 @@ export class BaseNodeComponent implements OnChanges {
   }
 
   getPermission(): Permission {
-    return this.gs.getPermission();
+    return this.es.getPermission();
   }
 
   getIcon(): string | null {
@@ -229,11 +229,11 @@ export class BaseNodeComponent implements OnChanges {
   }
 
   showOutputGroupButtons(port: BaseOutput): boolean {
-    return this.gs.getPermission() === Permission.Writable && Boolean(port.def.group);
+    return this.es.getPermission() === Permission.Writable && Boolean(port.def.group);
   }
 
   showInputGroupButtons(port: BaseInput): boolean {
-    return this.gs.getPermission() === Permission.Writable && (Boolean(port.def.group) || (port.isArray() && Boolean(port.control && port.showControl)));
+    return this.es.getPermission() === Permission.Writable && (Boolean(port.def.group) || (port.isArray() && Boolean(port.control && port.showControl)));
   }
 
   showInputControl(port: BaseInput): boolean {

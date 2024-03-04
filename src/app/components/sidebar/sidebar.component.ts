@@ -23,7 +23,7 @@ export class SidebarComponent {
   nf = inject(NodeFactory);
   nr = inject(Registry);
   ns = inject(NotificationService);
-  gs = inject(EditorService);
+  es = inject(EditorService);
   clipboard = inject(Clipboard);
   injector = inject(Injector);
   rs = inject(ReteService);
@@ -43,7 +43,7 @@ export class SidebarComponent {
   }
 
   onCopyToClipboard(_event: MouseEvent): void {
-    const graph = this.gs.serializeGraph();
+    const graph = this.es.serializeGraph();
     this.clipboard.copy(graph);
   }
 
@@ -60,7 +60,7 @@ export class SidebarComponent {
 
       if (this.isVsCode() || this.isElectron()) {
         const host = this.injector.get(HostService);
-        const graph = this.gs.serializeGraph();
+        const graph = this.es.serializeGraph();
         void host.postMessage({ type: 'saveGraph', data: graph });
       }
 
@@ -75,7 +75,7 @@ export class SidebarComponent {
     event.preventDefault();
     event.stopPropagation();
 
-    await this.gs.createNode(nodeTypeId, {
+    await this.es.createNode(nodeTypeId, {
       nodeId: null,
       userCreated: true,
     });

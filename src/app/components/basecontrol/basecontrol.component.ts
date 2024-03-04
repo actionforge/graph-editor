@@ -9,7 +9,7 @@ import { EditorService, Permission } from 'src/app/services/editor.service';
 })
 export class BaseControlComponent implements OnChanges {
   cdr = inject(ChangeDetectorRef);
-  gs = inject(EditorService);
+  es = inject(EditorService);
 
   BaseControlType = BaseControlType;
 
@@ -24,7 +24,7 @@ export class BaseControlComponent implements OnChanges {
   }
 
   getPermission(): Permission {
-    return this.gs.getPermission();
+    return this.es.getPermission();
   }
 
   isEmpty(): boolean {

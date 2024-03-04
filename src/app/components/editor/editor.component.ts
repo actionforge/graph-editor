@@ -46,7 +46,7 @@ provideVSCodeDesignSystem().register(
 })
 export class EditorComponent implements AfterViewInit, OnDestroy {
   nr = inject(Registry);
-  gs = inject(EditorService);
+  es = inject(EditorService);
   nf = inject(NodeFactory);
   ns = inject(NotificationService);
   gw = inject(GatewayService);
@@ -70,7 +70,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   Permission = Permission;
 
   onCopyToClipboard(_event: MouseEvent): void {
-    const graph = this.gs.serializeGraph();
+    const graph = this.es.serializeGraph();
     this.clipboard.copy(graph);
   }
 
@@ -286,7 +286,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   });
 
   getPermission(): Observable<Permission> {
-    return this.gs.permissionObservable$;
+    return this.es.permissionObservable$;
   }
 
   isVsCode(): boolean {
@@ -306,11 +306,11 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   }
 
   getSourceInfo(): Observable<SourceInfo | null> {
-    return this.gs.sourceInfoObservable$;
+    return this.es.sourceInfoObservable$;
   }
 
   async openGraph(uri: string, graph: string, transform: Transform | null): Promise<void> {
-    await this.gs.loadGraph(graph, environment.electron || (environment.vscode && !uri.startsWith("git:")), async (g: IGraph) => {
+    await this.es.loadGraph(graph, environment.electron || (environment.vscode && !uri.startsWith("git:")), async (g: IGraph) => {
       await this.loadGraphToEditor(g, transform);
     });
 
@@ -333,7 +333,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   }
 
   async onCreateNode(_event: MouseEvent, nodeTypeId: string): Promise<void> {
-    await this.gs.createNode(nodeTypeId, {
+    await this.es.createNode(nodeTypeId, {
       nodeId: null,
       userCreated: true
     });
@@ -341,7 +341,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   async createAndAddNodes(node: INode): Promise<BaseNode> {
 
-    const n = await this.gs.createNode(node.type, {
+    const n = await this.es.createNode(node.type, {
       nodeId: node.id,
       userCreated: false,
       inputValues: node.inputs,
@@ -425,7 +425,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
     const { editor, area, connection } = this.rs.createEditor(this.container.nativeElement, null);
 
-    this.createdSubscription = this.gs.onNodeCreated$.subscribe(async (e: { node: BaseNode, userCreated: boolean }) => {
+    this.createdSubscription = this.es.onNodeCreated$.subscribe(async (e: { node: BaseNode, userCreated: boolean }) => {
       if (e.userCreated) {
         // center node on screen
         const [hw, hh] = [this.container.nativeElement.clientWidth / 2, this.container.nativeElement.clientHeight / 2];
@@ -480,7 +480,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     if (environment.vscode || environment.electron) {
       const debounceSaveGraph = debounce(() => {
         if (this.rs.hasEditor()) {
-          const graph = this.gs.serializeGraph();
+          const graph = this.es.serializeGraph();
           this.host.postMessage({ type: 'saveGraph', data: graph });
         }
       }, 500, {
@@ -489,7 +489,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
         maxWait: 500, // ensure the graph is saved after max 1s
       });
 
-      this.gs.onInputChangeEvent$.subscribe(() => {
+      this.es.onInputChangeEvent$.subscribe(() => {
         debounceSaveGraph();
       });
 
@@ -497,14 +497,14 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
         const { type } = context as { type: string };
         switch (type) {
           case "nodedragged": {
-            if (!this.gs.isLoading()) {
-              const graph = this.gs.serializeGraph();
+            if (!this.es.isLoading()) {
+              const graph = this.es.serializeGraph();
               void this.host.postMessage({ type: 'saveGraph', data: graph });
             }
             break;
           }
           case "pointerup": { // finish dragging
-            if (!this.gs.isLoading()) {
+            if (!this.es.isLoading()) {
               void this.host.postMessage({ type: 'saveTransform', data: area.area.transform });
             }
             break;
@@ -525,8 +525,8 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
             // loading of the graph, or are user interactions. To avoid
             // the graph file in VS Code being marked as dirty, only
             // send the 'saveGraph' message outside of the loading operation.
-            if (!this.gs.isLoading()) {
-              const graph = this.gs.serializeGraph();
+            if (!this.es.isLoading()) {
+              const graph = this.es.serializeGraph();
               void this.host.postMessage({ type: 'saveGraph', data: graph });
             }
             break;
@@ -663,7 +663,7 @@ description: ''
 
   async arrangeNodes(): Promise<void> {
     await this.rs.getArrange().layout();
-    this.host.postMessage({ type: 'saveGraph', data: this.gs.serializeGraph() });
+    this.host.postMessage({ type: 'saveGraph', data: this.es.serializeGraph() });
   }
 
   async fitToCanvas(): Promise<void> {
@@ -674,6 +674,6 @@ description: ''
       }, 0);
     })
 
-    this.host.postMessage({ type: 'saveGraph', data: this.gs.serializeGraph() });
+    this.host.postMessage({ type: 'saveGraph', data: this.es.serializeGraph() });
   }
 }

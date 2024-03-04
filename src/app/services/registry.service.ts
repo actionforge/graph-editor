@@ -14,7 +14,7 @@ import { EditorService } from "./editor.service";
 export class Registry {
     yamlService = inject(YamlService);
     vscode = inject(HostService);
-    gs = inject(EditorService);
+    es = inject(EditorService);
 
     private basicDefs = new BehaviorSubject<Map<string, INodeTypeDefinitionBasic> | 'loading'>('loading');
     private basicNodeTypeObservable$ = this.basicDefs.asObservable();
@@ -105,11 +105,11 @@ export class Registry {
         const ruri: RegistryUriInfo = parseRegistryUri(uri);
         uri = uriToString(ruri);
 
-        const registries = this.gs.getRegistriesCopy();
+        const registries = this.es.getRegistriesCopy();
         registries.add(uri);
         await this.loadBasicNodeTypeDefinitions(registries);
 
-        this.gs.addRegistry(uri);
+        this.es.addRegistry(uri);
         return ruri;
     }
 
