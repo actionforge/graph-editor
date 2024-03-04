@@ -106,9 +106,7 @@ export class BaseNodeComponent implements OnChanges {
     event.stopPropagation();
     event.preventDefault();
 
-    if (this.data instanceof SubGraphNode) {
-      this.rs.openSubGraph(this.data, this.data.getGraph());
-    }
+    // TODO: (Seb) Open subgraph
   }
 
   async onAppendOutputValue(event: MouseEvent, output: BaseOutput): Promise<void> {

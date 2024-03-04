@@ -1,16 +1,14 @@
 import { Injectable, Injector, inject } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
-import { BaseNode, SubGraphNode } from '../helper/rete/basenode';
+import { BaseNode } from '../helper/rete/basenode';
 import { dump, load } from 'js-yaml';
 import { NodeFactory } from './nodefactory.service';
 import { generateRandomWord } from '../helper/wordlist';
-import { IConnection, IExecution, IGraph, IInput, IOutput, INode, ISubGraph } from '../schemas/graph';
-import { NodeEditor } from 'rete';
-import { AreaPlugin, NodeView } from 'rete-area-plugin';
+import { IGraph, IInput, IOutput, ISubGraph } from '../schemas/graph';
 import { parseRegistryUri } from '../helper/utils';
 import { HostService } from './host.service';
 import { Registry } from './registry.service';
-import { AreaExtra, ReteService, Schemes } from './rete.service';
+import { ReteService } from './rete.service';
 
 import AsyncLock from 'async-lock';
 
