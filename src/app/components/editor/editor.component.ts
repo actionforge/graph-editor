@@ -68,190 +68,20 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   Permission = Permission;
 
+  isVsCode = (): boolean => environment.vscode;
+
+  isWeb = (): boolean => environment.web;
+
+  isDev = (): boolean => environment.dev;
+
+  isGitHubGraph = (): boolean => this.githubGraph;
+
   onCopyToClipboard(_event: MouseEvent): void {
     const graph = this.es.serializeGraph();
     this.clipboard.copy(graph);
   }
 
-  nodeButtonSeries = [
-    // Group for Control Flow
-    [
-      {
-        type: "branch@v1",
-        icon: svgBranchIcon,
-        tooltip: "Conditional Branch",
-      },
-      {
-        type: "for@v1",
-        icon: svgFor,
-        tooltip: "For Loop",
-      },
-      {
-        type: "iterator@v1",
-        icon: svgIterator,
-        tooltip: "Iterator",
-      },
-    ],
-    // Group for Multi-threading / Processing
-    [
-      {
-        type: "parallel-for@v1",
-        icon: svgParallelFor,
-        tooltip: "Parallel For Loop",
-      },
-      {
-        type: "parallel-exec@v1",
-        icon: svgParallelExec,
-        tooltip: "Parallel Execution",
-      },
-      {
-        type: "parallel-multi-queue@v1",
-        icon: remixBarChartGroupedFill,
-        tooltip: "Parallel Multi Queue",
-      },
-      {
-        type: "wait-for@v1",
-        icon: tablerArrowsJoin,
-        tooltip: "Wait For",
-      },
-    ],
-    // Group for File Handling
-    [
-      {
-        type: "dirwalk@v1",
-        icon: remixFileSearchFill,
-        tooltip: "Dir Walker",
-      },
-      {
-        type: "file-read@v1",
-        icon: remixFolderOpenLine,
-        tooltip: "Read File",
-      },
-      {
-        type: "file-write@v1",
-        icon: remixSave3Fill,
-        tooltip: "Write File",
-      },
-    ],
-    // Group for Internet Access
-    [
-      {
-        type: "http@v1",
-        icon: svgHttp,
-        tooltip: "Http Branch",
-      },
-      {
-        type: "aws-s3-upload@v1",
-        icon: simpleAmazons3,
-        tooltip: "AWS S3 Upload",
-      },
-      {
-        type: "aws-s3-list@v1",
-        icon: simpleAmazons3,
-        tooltip: "AWS S3 List",
-      },
-    ], [
-      {
-        type: "run@v1",
-        icon: octTerminal,
-        tooltip: "Run",
-      },
-      {
-        type: "run-exec@v1",
-        icon: octPlay,
-        tooltip: "Run Executable",
-      }
-    ],
-    // Boolean operators
-    [
-      {
-        type: "bool-and@v1",
-        icon: svgBoolAnd,
-        tooltip: "Bool AND",
-      },
-      {
-        type: "bool-or@v1",
-        icon: svgBoolOr,
-        tooltip: "Bool OR",
-      },
-      {
-        type: "bool-xand@v1",
-        icon: svgBoolXand,
-        tooltip: "Bool XAND",
-      },
-      {
-        type: "bool-xor@v1",
-        icon: svgBoolXor,
-        tooltip: "Bool XOR",
-      },
-      {
-        type: "negate@v1",
-        icon: svgNegate,
-        tooltip: "Negate",
-      }
-    ],
-    // Group for String and File Path Operations
-    [
-      {
-        type: "string-match@v1",
-        icon: featherSearch,
-        tooltip: "String Match",
-      },
-      {
-        type: "string-fmt@v1",
-        icon: tablerCursorText,
-        tooltip: "String Format",
-      },
-      {
-        type: "string-array@v1",
-        icon: svgStringArray,
-        tooltip: "String Array",
-      },
-      {
-        type: "filepath-op@v1",
-        icon: tablerBracketsContain,
-        tooltip: "Filepath Operations",
-      },
-      {
-        type: "filepath-join@v1",
-        icon: tablerBracketsContain,
-        tooltip: "Filepath Join",
-      },
-    ],
-    // Group for Basic Operations and Utilities
-    [
-      {
-        type: "switch-platform@v1",
-        icon: tablerDeviceDesktop,
-        tooltip: "Platform Switch",
-      },
-      {
-        type: "switch-arch@v1",
-        icon: tablerCpu,
-        tooltip: "Architecture Switch",
-      },
-      {
-        type: "env-get@v1",
-        icon: svgEnvGetIcon,
-        tooltip: "Single Environment Variable",
-      },
-      {
-        type: "env-array@v1",
-        icon: svgEnvArray,
-        tooltip: "Environment Variables",
-      },
-      {
-        type: "gh-secret@v1",
-        icon: octKey,
-        tooltip: "Github Secret",
-      },
-      {
-        type: "print@v1",
-        icon: svgPrint,
-        tooltip: "Print Stuff",
-      },
-    ],
-  ];
+  nodeButtonSeries = nodeButtonSeries;
 
   githubGraph = false;
 
@@ -286,22 +116,6 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   getPermission(): Observable<Permission> {
     return this.es.permissionObservable$;
-  }
-
-  isVsCode(): boolean {
-    return environment.vscode;
-  }
-
-  isWeb(): boolean {
-    return environment.web;
-  }
-
-  isDev(): boolean {
-    return environment.dev;
-  }
-
-  isGitHubGraph(): boolean {
-    return this.githubGraph;
   }
 
   getSourceInfo(): Observable<SourceInfo | null> {
@@ -663,3 +477,183 @@ description: ''
     this.host.postMessage({ type: 'saveGraph', data: this.es.serializeGraph() });
   }
 }
+
+export const nodeButtonSeries = [
+  // Group for Control Flow
+  [
+    {
+      type: "branch@v1",
+      icon: svgBranchIcon,
+      tooltip: "Conditional Branch",
+    },
+    {
+      type: "for@v1",
+      icon: svgFor,
+      tooltip: "For Loop",
+    },
+    {
+      type: "iterator@v1",
+      icon: svgIterator,
+      tooltip: "Iterator",
+    },
+  ],
+  // Group for Multi-threading / Processing
+  [
+    {
+      type: "parallel-for@v1",
+      icon: svgParallelFor,
+      tooltip: "Parallel For Loop",
+    },
+    {
+      type: "parallel-exec@v1",
+      icon: svgParallelExec,
+      tooltip: "Parallel Execution",
+    },
+    {
+      type: "parallel-multi-queue@v1",
+      icon: remixBarChartGroupedFill,
+      tooltip: "Parallel Multi Queue",
+    },
+    {
+      type: "wait-for@v1",
+      icon: tablerArrowsJoin,
+      tooltip: "Wait For",
+    },
+  ],
+  // Group for File Handling
+  [
+    {
+      type: "dirwalk@v1",
+      icon: remixFileSearchFill,
+      tooltip: "Dir Walker",
+    },
+    {
+      type: "file-read@v1",
+      icon: remixFolderOpenLine,
+      tooltip: "Read File",
+    },
+    {
+      type: "file-write@v1",
+      icon: remixSave3Fill,
+      tooltip: "Write File",
+    },
+  ],
+  // Group for Internet Access
+  [
+    {
+      type: "http@v1",
+      icon: svgHttp,
+      tooltip: "Http Branch",
+    },
+    {
+      type: "aws-s3-upload@v1",
+      icon: simpleAmazons3,
+      tooltip: "AWS S3 Upload",
+    },
+    {
+      type: "aws-s3-list@v1",
+      icon: simpleAmazons3,
+      tooltip: "AWS S3 List",
+    },
+  ], [
+    {
+      type: "run@v1",
+      icon: octTerminal,
+      tooltip: "Run",
+    },
+    {
+      type: "run-exec@v1",
+      icon: octPlay,
+      tooltip: "Run Executable",
+    }
+  ],
+  // Boolean operators
+  [
+    {
+      type: "bool-and@v1",
+      icon: svgBoolAnd,
+      tooltip: "Bool AND",
+    },
+    {
+      type: "bool-or@v1",
+      icon: svgBoolOr,
+      tooltip: "Bool OR",
+    },
+    {
+      type: "bool-xand@v1",
+      icon: svgBoolXand,
+      tooltip: "Bool XAND",
+    },
+    {
+      type: "bool-xor@v1",
+      icon: svgBoolXor,
+      tooltip: "Bool XOR",
+    },
+    {
+      type: "negate@v1",
+      icon: svgNegate,
+      tooltip: "Negate",
+    }
+  ],
+  // Group for String and File Path Operations
+  [
+    {
+      type: "string-match@v1",
+      icon: featherSearch,
+      tooltip: "String Match",
+    },
+    {
+      type: "string-fmt@v1",
+      icon: tablerCursorText,
+      tooltip: "String Format",
+    },
+    {
+      type: "string-array@v1",
+      icon: svgStringArray,
+      tooltip: "String Array",
+    },
+    {
+      type: "filepath-op@v1",
+      icon: tablerBracketsContain,
+      tooltip: "Filepath Operations",
+    },
+    {
+      type: "filepath-join@v1",
+      icon: tablerBracketsContain,
+      tooltip: "Filepath Join",
+    },
+  ],
+  // Group for Basic Operations and Utilities
+  [
+    {
+      type: "switch-platform@v1",
+      icon: tablerDeviceDesktop,
+      tooltip: "Platform Switch",
+    },
+    {
+      type: "switch-arch@v1",
+      icon: tablerCpu,
+      tooltip: "Architecture Switch",
+    },
+    {
+      type: "env-get@v1",
+      icon: svgEnvGetIcon,
+      tooltip: "Single Environment Variable",
+    },
+    {
+      type: "env-array@v1",
+      icon: svgEnvArray,
+      tooltip: "Environment Variables",
+    },
+    {
+      type: "gh-secret@v1",
+      icon: octKey,
+      tooltip: "Github Secret",
+    },
+    {
+      type: "print@v1",
+      icon: svgPrint,
+      tooltip: "Print Stuff",
+    },
+  ],
+];
