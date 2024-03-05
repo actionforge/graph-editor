@@ -49,13 +49,13 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   nf = inject(NodeFactory);
   ns = inject(NotificationService);
   gw = inject(GatewayService);
+  rs = inject(ReteService);
 
   injector = inject(Injector);
   yamlService = inject(YamlService);
   host = inject(HostService);
   cdr = inject(ChangeDetectorRef);
   clipboard = inject(Clipboard);
-  rs = inject(ReteService);
 
   createdSubscription: Subscription | null = null;
 
