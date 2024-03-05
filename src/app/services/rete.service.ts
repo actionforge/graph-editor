@@ -10,6 +10,7 @@ import { BaseSocketComponent } from "../components/rete/socket/basesocket.compon
 import { BaseControlComponent } from "../components/basecontrol/basecontrol.component";
 import { AreaExtensions, AreaPlugin } from 'rete-area-plugin';
 import { BaseNode } from "../helper/rete/basenode";
+import { Subject } from "rxjs";
 import { BaseConnection } from "../helper/rete/baseconnection";
 
 import {
@@ -27,12 +28,10 @@ import {
     AutoArrangePlugin,
     Presets as ArrangePresets,
 } from 'rete-auto-arrange-plugin';
-import { Subject } from "rxjs";
 
 export type Conn = BaseConnection<BaseNode, BaseNode>;
 export type Schemes = GetSchemes<BaseNode, Conn>;
 export type AreaExtra = AngularArea2D<Schemes>;
-
 
 @Injectable({
     providedIn: 'root'
@@ -46,6 +45,8 @@ export class ReteService {
 
     private onEvent = new Subject<unknown>();
     onEvent$ = this.onEvent.asObservable();
+
+    on: <T>(context: T) => T = <T>(context: T): T => context;
 
     createEditor(element: HTMLElement): {
         editor: NodeEditor<Schemes>,
@@ -101,23 +102,19 @@ export class ReteService {
         this.installPipes(editor);
 
         editor.addPipe((context) => {
-            this.onEvent.next(context);
-            return context;
+            return this.on(context);
         });
 
         area.addPipe((context) => {
-            this.onEvent.next(context);
-            return context;
+            return this.on(context);
         });
 
         connection.addPipe((context) => {
-            this.onEvent.next(context);
-            return context;
+            return this.on(context);
         });
 
         arrange.addPipe((context) => {
-            this.onEvent.next(context);
-            return context;
+            return this.on(context);
         });
 
         AreaExtensions.simpleNodesOrder(area)

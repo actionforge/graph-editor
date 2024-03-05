@@ -1,5 +1,4 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Injector, OnDestroy, ViewChild, inject } from '@angular/core';
-import { Root } from 'rete';
 import { Output, Socket } from 'rete/_types/presets/classic';
 import { BaseConnection } from 'src/app/helper/rete/baseconnection';
 import { BaseNode } from 'src/app/helper/rete/basenode';
@@ -23,13 +22,13 @@ import { featherSearch } from '@ng-icons/feather-icons';
 import { SocketData } from 'rete-connection-plugin';
 import { BaseInput } from 'src/app/helper/rete/baseinput';
 import { BaseOutput } from 'src/app/helper/rete/baseoutput';
-import { Area2D, AreaExtensions } from 'rete-area-plugin';
+import { AreaExtensions } from 'rete-area-plugin';
 import { Transform } from 'rete-area-plugin/_types/area';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { simpleAmazons3 } from '@ng-icons/simple-icons';
 import { remixBarChartGroupedFill, remixFileSearchFill, remixFolderOpenLine, remixSave3Fill } from '@ng-icons/remixicon';
 import { dump } from 'js-yaml';
-import { AreaExtra, ReteService, Schemes } from 'src/app/services/rete.service';
+import { ReteService } from 'src/app/services/rete.service';
 
 import debounce from 'lodash.debounce';
 
@@ -423,7 +422,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   async ngAfterViewInit(): Promise<void> {
 
-    const { editor, area, connection } = this.rs.createEditor(this.container.nativeElement);
+    const { editor, area } = this.rs.createEditor(this.container.nativeElement);
 
     this.createdSubscription = this.es.onNodeCreated$.subscribe(async (e: { node: BaseNode, userCreated: boolean }) => {
       if (e.userCreated) {
@@ -434,7 +433,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       }
     });
 
-    connection.addPipe((context) => {
+    this.rs.on((context: unknown) => {
       const { type } = context as { type: string };
 
       // In the editor, the events 'connectionpick' and 'connectiondrop' are triggered
@@ -473,6 +472,34 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
           }
           break;
         }
+        case "nodedragged": {
+          if (!this.es.isLoading()) {
+            // const graph = this.es.serializeGraph();
+            // void this.host.postMessage({ type: 'saveGraph', data: graph });
+          }
+          break;
+        }
+        case "pointerup": { // finish moving around in the editor
+          if (!this.es.isLoading()) {
+            // void this.host.postMessage({ type: 'saveTransform', data: area.area.transform });
+          }
+          break;
+        }
+        case "nodetranslated":
+        case "nodecreated":
+        case "noderemoved":
+        case "connectioncreated":
+        case "connectionremoved": {
+          // VS Code has no way of knowing if the events are fired by/during
+          // loading of the graph, or are user interactions. To avoid
+          // the graph file in VS Code being marked as dirty, only
+          // send the 'saveGraph' message outside of the loading operation.
+          if (!this.es.isLoading()) {
+            const graph = this.es.serializeGraph();
+            void this.host.postMessage({ type: 'saveGraph', data: graph });
+          }
+          break;
+        }
       }
       return context;
     });
@@ -493,47 +520,6 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
         debounceSaveGraph();
       });
 
-      area.addPipe((context: Root<Schemes> | AreaExtra | Area2D<Schemes>) => {
-        const { type } = context as { type: string };
-        switch (type) {
-          case "nodedragged": {
-            if (!this.es.isLoading()) {
-              const graph = this.es.serializeGraph();
-              void this.host.postMessage({ type: 'saveGraph', data: graph });
-            }
-            break;
-          }
-          case "pointerup": { // finish dragging
-            if (!this.es.isLoading()) {
-              void this.host.postMessage({ type: 'saveTransform', data: area.area.transform });
-            }
-            break;
-          }
-        }
-        return context;
-      })
-
-      editor.addPipe((context: Root<Schemes>) => {
-        const { type } = context as { type: string };
-        switch (type) {
-          case "nodetranslated":
-          case "nodecreated":
-          case "noderemoved":
-          case "connectioncreated":
-          case "connectionremoved": {
-            // VS Code has no way of knowing if the events are fired by/during
-            // loading of the graph, or are user interactions. To avoid
-            // the graph file in VS Code being marked as dirty, only
-            // send the 'saveGraph' message outside of the loading operation.
-            if (!this.es.isLoading()) {
-              const graph = this.es.serializeGraph();
-              void this.host.postMessage({ type: 'saveGraph', data: graph });
-            }
-            break;
-          }
-        }
-        return context;
-      });
     } else if (environment.web) {
 
       const foo = `entry: start
