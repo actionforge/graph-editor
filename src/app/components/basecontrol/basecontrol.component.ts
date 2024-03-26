@@ -81,8 +81,6 @@ export class BaseControlComponent implements OnChanges {
   }
 
   onChange(e: Event | KeyboardEvent | FocusEvent, index?: number, commit?: boolean): void {
-    // Event can be KeyboardEvent or MouseEvent
-
     const target = e.target as HTMLInputElement;
     const oldValue = this.data.getValue();
 
@@ -90,9 +88,9 @@ export class BaseControlComponent implements OnChanges {
       case BaseControlType.array_string:
       case BaseControlType.array_number:
       case BaseControlType.array_bool: {
-        let v = (e instanceof KeyboardEvent && e.key === 'Enter') || e instanceof FocusEvent ? target.value : oldValue;
+        let v = target.value;
         if (v === "" && this.data.required && this.data.default) {
-          v = this.data.default;
+          v = this.data.default as string;
         }
 
         if (index === undefined || index < 0) {
@@ -101,7 +99,7 @@ export class BaseControlComponent implements OnChanges {
           throw new Error("Expected array");
         } else if (index >= oldValue.length) {
           throw new Error("Index out of bounds");
-        } else if (!Array.isArray(oldValue) || (oldValue[index] !== undefined && typeof oldValue[index] !== typeof v)) {
+        } else if ((oldValue[index] !== undefined && typeof oldValue[index] !== typeof v)) {
           throw new Error("Expected value of type " + this.data.type);
         }
 
@@ -142,7 +140,9 @@ export class BaseControlComponent implements OnChanges {
       }
     }
 
-    this.cdr.detectChanges();
+    if (e instanceof KeyboardEvent && e.key === 'Enter' || e.type === 'blur') {
+      this.cdr.detectChanges();
+    }
   }
 }
 

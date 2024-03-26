@@ -42,14 +42,15 @@
 <!-- Single line text field -->
 <ng-template #string let-value="value" let-index="index">
   <ng-container *ngIf="!data.multiline; else stringMulti">
-    <input type="text" class="w-full cid-input" (keyup)="onChange($event, index)" [class.cid-required]="isEmpty()"
-      autocomplete="off" [placeholder]="data.hint || ''" [value]="value"
+    <input type="text" class="w-full cid-input" (blur)="onChange($event, index)" (keyup)="onChange($event, index)"
+      [class.cid-required]="isEmpty()" autocomplete="off" [placeholder]="data.hint || ''" [value]="value"
       [readonly]="getPermission() === Permission.ReadOnly" />
   </ng-container>
 
   <ng-template #stringMulti>
-    <vscode-text-area #input class="w-full cid-input" (blur)="onChange($event)" [class.cid-required]="isEmpty()"
-      [readonly]="getPermission() === Permission.ReadOnly" [value]="value"></vscode-text-area>
+    <vscode-text-area #input class="w-full cid-input" (blur)="onChange($event)" (keyup)="onChange($event, index)"
+      [class.cid-required]="isEmpty()" [readonly]="getPermission() === Permission.ReadOnly"
+      [value]="value"></vscode-text-area>
   </ng-template>
 
 </ng-template>
